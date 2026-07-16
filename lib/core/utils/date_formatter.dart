@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../constants/app_constants.dart';
+import '../localization/l10n_extension.dart';
 
 /// Utility class for formatting and parsing dates
 class DateFormatter {
@@ -91,13 +93,13 @@ class DateFormatter {
   }
 
   /// Get relative date label
-  static String getRelativeLabel(DateTime date) {
-    if (isToday(date)) return 'Today';
+  static String getRelativeLabel(BuildContext context, DateTime date) {
+    if (isToday(date)) return context.l10n.today;
     final yesterday = DateTime.now().subtract(const Duration(days: 1));
     if (date.year == yesterday.year &&
         date.month == yesterday.month &&
         date.day == yesterday.day) {
-      return 'Yesterday';
+      return context.l10n.yesterday;
     }
     return format(date);
   }

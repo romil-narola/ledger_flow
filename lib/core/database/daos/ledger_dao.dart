@@ -1,11 +1,14 @@
 import 'package:drift/drift.dart';
 import '../app_database.dart';
 
+import 'scoped_business_dao.dart';
+
 part 'ledger_dao.g.dart';
 
 /// Data Access Object for Ledger Entries
 @DriftAccessor(tables: [LedgerEntries])
-class LedgerDao extends DatabaseAccessor<AppDatabase> with _$LedgerDaoMixin {
+class LedgerDao extends DatabaseAccessor<AppDatabase>
+    with _$LedgerDaoMixin, ScopedBusinessDao {
   LedgerDao(super.db);
 
   // ─── Read Operations ────────────────────────────────────────────
@@ -22,20 +25,21 @@ class LedgerDao extends DatabaseAccessor<AppDatabase> with _$LedgerDaoMixin {
     int offset = 0,
   }) {
     final query = select(ledgerEntries)
+      ..where((t) => t.businessId.equals(currentBusinessId))
       ..orderBy(
           [(l) => OrderingTerm.desc(l.date), (l) => OrderingTerm.desc(l.id)])
       ..limit(limit, offset: offset);
 
-    if (from != null) query.where((l) => l.date.isBiggerOrEqualValue(from));
-    if (to != null) query.where((l) => l.date.isSmallerOrEqualValue(to));
+    if (from != null) query.where((l) => l.businessId.equals(currentBusinessId) & l.date.isBiggerOrEqualValue(from));
+    if (to != null) query.where((l) => l.businessId.equals(currentBusinessId) & l.date.isSmallerOrEqualValue(to));
     if (transactionType != null) {
       query.where((l) => l.transactionType.equals(transactionType));
     }
     if (walletId != null) {
-      query.where((l) => l.walletAccountId.equals(walletId));
+      query.where((l) => l.walletAccountId.equals(walletId) & l.businessId.equals(currentBusinessId));
     }
-    if (supplierId != null) query.where((l) => l.supplierId.equals(supplierId));
-    if (customerId != null) query.where((l) => l.customerId.equals(customerId));
+    if (supplierId != null) query.where((l) => l.supplierId.equals(supplierId) & l.businessId.equals(currentBusinessId));
+    if (customerId != null) query.where((l) => l.customerId.equals(customerId) & l.businessId.equals(currentBusinessId));
 
     return query.get();
   }
@@ -43,7 +47,8 @@ class LedgerDao extends DatabaseAccessor<AppDatabase> with _$LedgerDaoMixin {
   /// Stream all ledger entries (reactive)
   Stream<List<LedgerEntry>> watchAllEntries({int limit = 50}) {
     return (select(ledgerEntries)
-          ..orderBy([
+      ..where((t) => t.businessId.equals(currentBusinessId))
+      ..orderBy([
             (l) => OrderingTerm.desc(l.date),
             (l) => OrderingTerm.desc(l.id)
           ])
@@ -67,7 +72,7 @@ class LedgerDao extends DatabaseAccessor<AppDatabase> with _$LedgerDaoMixin {
   /// Get entries for a specific supplier
   Future<List<LedgerEntry>> getSupplierLedger(int supplierId) {
     return (select(ledgerEntries)
-          ..where((l) => l.supplierId.equals(supplierId))
+          ..where((l) => l.supplierId.equals(supplierId) & l.businessId.equals(currentBusinessId))
           ..orderBy([(l) => OrderingTerm.desc(l.date)]))
         .get();
   }
@@ -75,14 +80,14 @@ class LedgerDao extends DatabaseAccessor<AppDatabase> with _$LedgerDaoMixin {
   /// Get entries for a specific customer
   Future<List<LedgerEntry>> getCustomerLedger(int customerId) {
     return (select(ledgerEntries)
-          ..where((l) => l.customerId.equals(customerId))
+          ..where((l) => l.customerId.equals(customerId) & l.businessId.equals(currentBusinessId))
           ..orderBy([(l) => OrderingTerm.desc(l.date)]))
         .get();
   }
 
   /// Get entry by ID
   Future<LedgerEntry?> getEntryById(int id) {
-    return (select(ledgerEntries)..where((l) => l.id.equals(id)))
+    return (select(ledgerEntries)..where((l) => l.id.equals(id) & l.businessId.equals(currentBusinessId)))
         .getSingleOrNull();
   }
 
@@ -90,13 +95,13 @@ class LedgerDao extends DatabaseAccessor<AppDatabase> with _$LedgerDaoMixin {
 
   /// Insert a ledger entry
   Future<int> insertEntry(LedgerEntriesCompanion entry) {
-    return into(ledgerEntries).insert(entry);
+    return into(ledgerEntries).insert(entry.copyWith(businessId: Value(currentBusinessId)));
   }
 
   /// Get the last wallet balance from ledger for a given wallet
   Future<double> getLastWalletBalance(int walletId) async {
     final query = select(ledgerEntries)
-      ..where((l) => l.walletAccountId.equals(walletId))
+      ..where((l) => l.walletAccountId.equals(walletId) & l.businessId.equals(currentBusinessId))
       ..orderBy(
           [(l) => OrderingTerm.desc(l.date), (l) => OrderingTerm.desc(l.id)])
       ..limit(1);

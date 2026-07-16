@@ -295,5 +295,15 @@
   "customerUpdatedSuccessfully": "ग्राहक सफलतापूर्वक अपडेट किया",
   "customerDeleted": "ग्राहक हटा दिया",
   "saleRecordedSuccessfully": "बिक्री सफलतापूर्वक दर्ज की",
-  "customerNotFound": "ग्राहक नहीं मिला"
+  "customerNotFound": "ग्राहक नहीं मिला",
+  "appName": "LedgerFlow",
+  "businesses": "व्यापार",
+  "today": "आज",
+  "yesterday": "कल",
+  "newBusiness": "नया व्यापार",
+  "createBusiness": "व्यापार बनाएं",
+  "businessName": "व्यापार का नाम",
+  "descriptionOptional": "विवरण (वैकल्पिक)",
+  "requiredField": "आवश्यक",
+  "noDescription": "कोई विवरण नहीं"
 }

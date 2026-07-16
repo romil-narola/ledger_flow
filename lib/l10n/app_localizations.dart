@@ -1821,6 +1821,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Customer not found'**
   String get customerNotFound;
+
+  /// No description provided for @appName.
+  ///
+  /// In en, this message translates to:
+  /// **'LedgerFlow'**
+  String get appName;
+
+  /// No description provided for @businesses.
+  ///
+  /// In en, this message translates to:
+  /// **'Businesses'**
+  String get businesses;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @newBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'New Business'**
+  String get newBusiness;
+
+  /// No description provided for @createBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Business'**
+  String get createBusiness;
+
+  /// No description provided for @businessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Name'**
+  String get businessName;
+
+  /// No description provided for @descriptionOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (Optional)'**
+  String get descriptionOptional;
+
+  /// No description provided for @requiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get requiredField;
+
+  /// No description provided for @noDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description'**
+  String get noDescription;
 }
 
 class _AppLocalizationsDelegate

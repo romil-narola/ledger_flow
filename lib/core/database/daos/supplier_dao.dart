@@ -1,36 +1,38 @@
 import 'package:drift/drift.dart';
 import '../app_database.dart';
 
+import 'scoped_business_dao.dart';
+
 part 'supplier_dao.g.dart';
 
 /// Data Access Object for Suppliers
 @DriftAccessor(tables: [Suppliers, Purchases, SupplierPayments, LedgerEntries])
 class SupplierDao extends DatabaseAccessor<AppDatabase>
-    with _$SupplierDaoMixin {
+    with _$SupplierDaoMixin, ScopedBusinessDao {
   SupplierDao(super.db);
 
   // ─── Supplier CRUD ───────────────────────────────────────────────
 
   Future<List<Supplier>> getAllSuppliers() {
     return (select(suppliers)
-          ..where((s) => s.isActive.equals(true))
+          ..where((s) => s.businessId.equals(currentBusinessId) & s.isActive.equals(true))
           ..orderBy([(s) => OrderingTerm.asc(s.name)]))
         .get();
   }
 
   Stream<List<Supplier>> watchAllSuppliers() {
     return (select(suppliers)
-          ..where((s) => s.isActive.equals(true))
+          ..where((s) => s.businessId.equals(currentBusinessId) & s.isActive.equals(true))
           ..orderBy([(s) => OrderingTerm.asc(s.name)]))
         .watch();
   }
 
   Future<Supplier?> getSupplierById(int id) {
-    return (select(suppliers)..where((s) => s.id.equals(id))).getSingleOrNull();
+    return (select(suppliers)..where((s) => s.id.equals(id) & s.businessId.equals(currentBusinessId))).getSingleOrNull();
   }
 
   Future<int> insertSupplier(SuppliersCompanion supplier) {
-    return into(suppliers).insert(supplier);
+    return into(suppliers).insert(supplier.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<bool> updateSupplier(SuppliersCompanion supplier) {
@@ -38,7 +40,7 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> softDeleteSupplier(int supplierId) {
-    return (update(suppliers)..where((s) => s.id.equals(supplierId)))
+    return (update(suppliers)..where((s) => s.id.equals(supplierId) & s.businessId.equals(currentBusinessId)))
         .write(SuppliersCompanion(
       isActive: const Value(false),
       updatedAt: Value(DateTime.now()),
@@ -53,7 +55,7 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
     required double outstanding,
     required double creditBalance,
   }) {
-    return (update(suppliers)..where((s) => s.id.equals(supplierId)))
+    return (update(suppliers)..where((s) => s.id.equals(supplierId) & s.businessId.equals(currentBusinessId)))
         .write(SuppliersCompanion(
       totalPurchases: Value(totalPurchases),
       totalPayments: Value(totalPayments),
@@ -67,21 +69,22 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Purchase>> getPurchasesBySupplier(int supplierId) {
     return (select(purchases)
-          ..where((p) => p.supplierId.equals(supplierId))
+          ..where((p) => p.supplierId.equals(supplierId) & p.businessId.equals(currentBusinessId))
           ..orderBy([(p) => OrderingTerm.desc(p.date)]))
         .get();
   }
 
   Future<List<Purchase>> getAllPurchases({DateTime? from, DateTime? to}) {
     final query = select(purchases)
+      ..where((t) => t.businessId.equals(currentBusinessId))
       ..orderBy([(p) => OrderingTerm.desc(p.date)]);
-    if (from != null) query.where((p) => p.date.isBiggerOrEqualValue(from));
-    if (to != null) query.where((p) => p.date.isSmallerOrEqualValue(to));
+    if (from != null) query.where((p) => p.businessId.equals(currentBusinessId) & p.date.isBiggerOrEqualValue(from));
+    if (to != null) query.where((p) => p.businessId.equals(currentBusinessId) & p.date.isSmallerOrEqualValue(to));
     return query.get();
   }
 
   Future<int> insertPurchase(PurchasesCompanion purchase) {
-    return into(purchases).insert(purchase);
+    return into(purchases).insert(purchase.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<double> getTotalPurchasesForSupplier(int supplierId) async {
@@ -107,7 +110,7 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<SupplierPayment>> getPaymentsBySupplier(int supplierId) {
     return (select(supplierPayments)
-          ..where((p) => p.supplierId.equals(supplierId))
+          ..where((p) => p.supplierId.equals(supplierId) & p.businessId.equals(currentBusinessId))
           ..orderBy([(p) => OrderingTerm.desc(p.date)]))
         .get();
   }
@@ -115,14 +118,15 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<List<SupplierPayment>> getAllSupplierPayments(
       {DateTime? from, DateTime? to}) {
     final query = select(supplierPayments)
+      ..where((t) => t.businessId.equals(currentBusinessId))
       ..orderBy([(p) => OrderingTerm.desc(p.date)]);
-    if (from != null) query.where((p) => p.date.isBiggerOrEqualValue(from));
-    if (to != null) query.where((p) => p.date.isSmallerOrEqualValue(to));
+    if (from != null) query.where((p) => p.businessId.equals(currentBusinessId) & p.date.isBiggerOrEqualValue(from));
+    if (to != null) query.where((p) => p.businessId.equals(currentBusinessId) & p.date.isSmallerOrEqualValue(to));
     return query.get();
   }
 
   Future<int> insertSupplierPayment(SupplierPaymentsCompanion payment) {
-    return into(supplierPayments).insert(payment);
+    return into(supplierPayments).insert(payment.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<double> getTotalPaymentsForSupplier(int supplierId) async {

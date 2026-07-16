@@ -295,5 +295,15 @@
   "customerUpdatedSuccessfully": "ગ્રાહક સફળતાપૂર્વક સુધાર્યો",
   "customerDeleted": "ગ્રાહક કાઢી નાખ્યો",
   "saleRecordedSuccessfully": "વેચાણ સફળતાપૂર્વક નોંધ્યું",
-  "customerNotFound": "ગ્રાહક મળ્યો નહીં"
+  "customerNotFound": "ગ્રાહક મળ્યો નહીં",
+  "appName": "LedgerFlow",
+  "businesses": "વ્યવસાયો",
+  "today": "આજે",
+  "yesterday": "ગઈકાલે",
+  "newBusiness": "નવો વ્યવસાય",
+  "createBusiness": "વ્યવસાય બનાવો",
+  "businessName": "વ્યવસાયનું નામ",
+  "descriptionOptional": "વર્ણન (વૈકલ્પિક)",
+  "requiredField": "ફરજિયાત છે",
+  "noDescription": "કોઈ વર્ણન નથી"
 }

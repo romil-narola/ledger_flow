@@ -21,6 +21,8 @@ import '../../../features/expenses/presentation/screens/expense_list_screen.dart
 import '../../../features/expenses/presentation/screens/expense_form_screen.dart';
 import '../../../features/expenses/presentation/screens/expense_summary_screen.dart';
 import '../../../features/expenses/presentation/screens/expense_category_screen.dart';
+import '../../../features/business/presentation/screens/business_list_screen.dart';
+import '../../../features/business/presentation/screens/business_form_screen.dart';
 import '../../presentation/main_shell.dart';
 
 /// Application routing configuration using GoRouter with shell route for navigation
@@ -34,6 +36,19 @@ final GoRouter appRouter = GoRouter(
           path: '/dashboard',
           name: 'dashboard',
           builder: (context, state) => const DashboardScreen(),
+        ),
+        // ─── Business Routes ───────────────────────────────────────
+        GoRoute(
+          path: '/businesses',
+          name: 'businesses',
+          builder: (context, state) => const BusinessListScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              name: 'business-add',
+              builder: (context, state) => const BusinessFormScreen(),
+            ),
+          ],
         ),
         // ─── Wallet Routes ─────────────────────────────────────────
         GoRoute(

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/core.dart';
 import 'l10n/app_localizations.dart';
+import 'features/business/presentation/bloc/business_cubit.dart';
 
 void main() async {
   // Ensure Flutter engine is initialized
@@ -19,8 +20,11 @@ class LedgerFlowApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => LocaleCubit(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => LocaleCubit()),
+        BlocProvider(create: (_) => sl<BusinessCubit>()),
+      ],
       child: BlocBuilder<LocaleCubit, Locale>(
         builder: (context, locale) {
           return MaterialApp.router(

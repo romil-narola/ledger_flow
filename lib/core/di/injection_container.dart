@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ledger_flow/core/database/daos/expense_dao.dart';
 import '../database/app_database.dart';
 import '../database/daos/wallet_dao.dart';
@@ -7,8 +8,14 @@ import '../database/daos/customer_dao.dart';
 import '../database/daos/purchase_dao.dart';
 import '../database/daos/sales_dao.dart';
 import '../database/daos/ledger_dao.dart';
+import '../database/daos/business_dao.dart';
+
+// Services
+import '../../features/business/data/services/current_business_service.dart';
 
 // Repositories
+import '../../features/business/data/repositories/business_repository_impl.dart';
+import '../../features/business/domain/repositories/business_repository.dart';
 import '../../features/wallet/data/repositories/wallet_repository_impl.dart';
 import '../../features/wallet/domain/repositories/wallet_repository.dart';
 import '../../features/supplier/data/repositories/supplier_repository_impl.dart';
@@ -30,6 +37,7 @@ import '../../features/customer/domain/usecases/customer_usecases.dart';
 import '../../features/expenses/domain/usecases/expense_usecases.dart';
 
 // BLoCs
+import '../../features/business/presentation/bloc/business_cubit.dart';
 import '../../features/wallet/presentation/bloc/wallet_bloc.dart';
 import '../../features/supplier/presentation/bloc/supplier_bloc.dart';
 import '../../features/customer/presentation/bloc/customer_bloc.dart';
@@ -40,20 +48,41 @@ import '../../features/expenses/presentation/bloc/expense_bloc.dart';
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
+  // ─── External Services ───────────────────────────────────────────
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerSingleton<SharedPreferences>(sharedPreferences);
+
   // ─── Database ────────────────────────────────────────────────────
   final db = AppDatabase();
   sl.registerSingleton<AppDatabase>(db);
 
+  // ─── Services ────────────────────────────────────────────────────
+  sl.registerSingleton<CurrentBusinessService>(
+    CurrentBusinessService(sl<SharedPreferences>()),
+  );
+
   // ─── DAOs ────────────────────────────────────────────────────────
-  sl.registerSingleton<WalletDao>(db.walletDao);
-  sl.registerSingleton<SupplierDao>(db.supplierDao);
-  sl.registerSingleton<CustomerDao>(db.customerDao);
-  sl.registerSingleton<PurchaseDao>(db.purchaseDao);
-  sl.registerSingleton<SalesDao>(db.salesDao);
-  sl.registerSingleton<LedgerDao>(db.ledgerDao);
-  sl.registerSingleton<ExpenseDao>(db.expenseDao);
+  sl.registerSingleton<BusinessDao>(db.businessDao);
+  sl.registerSingleton<WalletDao>(
+      db.walletDao..businessService = sl<CurrentBusinessService>());
+  sl.registerSingleton<SupplierDao>(
+      db.supplierDao..businessService = sl<CurrentBusinessService>());
+  sl.registerSingleton<CustomerDao>(
+      db.customerDao..businessService = sl<CurrentBusinessService>());
+  sl.registerSingleton<PurchaseDao>(
+      db.purchaseDao..businessService = sl<CurrentBusinessService>());
+  sl.registerSingleton<SalesDao>(
+      db.salesDao..businessService = sl<CurrentBusinessService>());
+  sl.registerSingleton<LedgerDao>(
+      db.ledgerDao..businessService = sl<CurrentBusinessService>());
+  sl.registerSingleton<ExpenseDao>(
+      db.expenseDao..businessService = sl<CurrentBusinessService>());
 
   // ─── Repositories ────────────────────────────────────────────────
+  sl.registerSingleton<BusinessRepository>(
+    BusinessRepositoryImpl(sl<BusinessDao>()),
+  );
+
   sl.registerSingleton<WalletRepository>(
     WalletRepositoryImpl(sl<WalletDao>()),
   );
@@ -216,5 +245,11 @@ Future<void> initDependencies() async {
         addExpense: sl(),
         deleteExpense: sl(),
         getCategoryTotals: sl(),
+      ));
+
+  // ─── Business BLoC ─────────────────────────────────────────
+  sl.registerFactory(() => BusinessCubit(
+        repository: sl(),
+        currentBusinessService: sl(),
       ));
 }

@@ -880,4 +880,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customerNotFound => 'Customer not found';
+
+  @override
+  String get appName => 'LedgerFlow';
+
+  @override
+  String get businesses => 'Businesses';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get newBusiness => 'New Business';
+
+  @override
+  String get createBusiness => 'Create Business';
+
+  @override
+  String get businessName => 'Business Name';
+
+  @override
+  String get descriptionOptional => 'Description (Optional)';
+
+  @override
+  String get requiredField => 'Required';
+
+  @override
+  String get noDescription => 'No description';
 }

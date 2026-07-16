@@ -295,5 +295,15 @@
   "customerUpdatedSuccessfully": "Customer updated successfully",
   "customerDeleted": "Customer deleted",
   "saleRecordedSuccessfully": "Sale recorded successfully",
-  "customerNotFound": "Customer not found"
+  "customerNotFound": "Customer not found",
+  "appName": "LedgerFlow",
+  "businesses": "Businesses",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "newBusiness": "New Business",
+  "createBusiness": "Create Business",
+  "businessName": "Business Name",
+  "descriptionOptional": "Description (Optional)",
+  "requiredField": "Required",
+  "noDescription": "No description"
 }

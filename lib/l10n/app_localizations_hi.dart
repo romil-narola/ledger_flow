@@ -887,4 +887,34 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get customerNotFound => 'ग्राहक नहीं मिला';
+
+  @override
+  String get appName => 'LedgerFlow';
+
+  @override
+  String get businesses => 'व्यापार';
+
+  @override
+  String get today => 'आज';
+
+  @override
+  String get yesterday => 'कल';
+
+  @override
+  String get newBusiness => 'नया व्यापार';
+
+  @override
+  String get createBusiness => 'व्यापार बनाएं';
+
+  @override
+  String get businessName => 'व्यापार का नाम';
+
+  @override
+  String get descriptionOptional => 'विवरण (वैकल्पिक)';
+
+  @override
+  String get requiredField => 'आवश्यक';
+
+  @override
+  String get noDescription => 'कोई विवरण नहीं';
 }

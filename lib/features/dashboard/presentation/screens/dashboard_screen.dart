@@ -7,6 +7,9 @@ import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event_state.dart';
 import '../../../ledger/ledger.dart';
 
+import '../../../business/presentation/bloc/business_cubit.dart';
+import '../../../business/presentation/bloc/business_state.dart';
+
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
@@ -14,7 +17,23 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<DashboardBloc>()..add(const LoadDashboard()),
-      child: const _DashboardView(),
+      child: Builder(
+        builder: (context) {
+          return BlocListener<BusinessCubit, BusinessState>(
+            listenWhen: (previous, current) {
+              final prevId = previous.maybeWhen(
+                  loaded: (_, c) => c.id, orElse: () => null);
+              final currId =
+                  current.maybeWhen(loaded: (_, c) => c.id, orElse: () => null);
+              return prevId != currId && prevId != null;
+            },
+            listener: (context, state) {
+              context.read<DashboardBloc>().add(const RefreshDashboard());
+            },
+            child: const _DashboardView(),
+          );
+        },
+      ),
     );
   }
 }
@@ -162,9 +181,14 @@ class _DashboardView extends StatelessWidget {
       ),
       backgroundColor: AppColors.primary,
       title: Text(
-        "LedgerFlow",
+        context.l10n.appName,
       ),
       actions: [
+        IconButton(
+          onPressed: () => context.push('/businesses'),
+          icon: const Icon(Icons.business, color: Colors.white),
+          tooltip: context.l10n.businesses,
+        ),
         IconButton(
           onPressed: () => showDialog(
             context: context,
@@ -571,7 +595,7 @@ class _TransactionTile extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(
-          DateFormatter.getRelativeLabel(entry.date),
+          DateFormatter.getRelativeLabel(context, entry.date),
           style: Theme.of(context).textTheme.bodySmall,
         ),
         trailing: Text(

@@ -3,6 +3,350 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
+class $BusinessesTable extends Businesses
+    with TableInfo<$BusinessesTable, Business> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BusinessesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 100),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _currencyCodeMeta =
+      const VerificationMeta('currencyCode');
+  @override
+  late final GeneratedColumn<String> currencyCode = GeneratedColumn<String>(
+      'currency_code', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('INR'));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, description, currencyCode, createdAt, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'businesses';
+  @override
+  VerificationContext validateIntegrity(Insertable<Business> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    }
+    if (data.containsKey('currency_code')) {
+      context.handle(
+          _currencyCodeMeta,
+          currencyCode.isAcceptableOrUnknown(
+              data['currency_code']!, _currencyCodeMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Business map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Business(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      currencyCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}currency_code'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $BusinessesTable createAlias(String alias) {
+    return $BusinessesTable(attachedDatabase, alias);
+  }
+}
+
+class Business extends DataClass implements Insertable<Business> {
+  final int id;
+  final String name;
+  final String? description;
+  final String currencyCode;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const Business(
+      {required this.id,
+      required this.name,
+      this.description,
+      required this.currencyCode,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['currency_code'] = Variable<String>(currencyCode);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  BusinessesCompanion toCompanion(bool nullToAbsent) {
+    return BusinessesCompanion(
+      id: Value(id),
+      name: Value(name),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      currencyCode: Value(currencyCode),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Business.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Business(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String?>(json['description']),
+      currencyCode: serializer.fromJson<String>(json['currencyCode']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String?>(description),
+      'currencyCode': serializer.toJson<String>(currencyCode),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  Business copyWith(
+          {int? id,
+          String? name,
+          Value<String?> description = const Value.absent(),
+          String? currencyCode,
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      Business(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        description: description.present ? description.value : this.description,
+        currencyCode: currencyCode ?? this.currencyCode,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  Business copyWithCompanion(BusinessesCompanion data) {
+    return Business(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      description:
+          data.description.present ? data.description.value : this.description,
+      currencyCode: data.currencyCode.present
+          ? data.currencyCode.value
+          : this.currencyCode,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Business(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('currencyCode: $currencyCode, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, description, currencyCode, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Business &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.currencyCode == this.currencyCode &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class BusinessesCompanion extends UpdateCompanion<Business> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String?> description;
+  final Value<String> currencyCode;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const BusinessesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.currencyCode = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  BusinessesCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.description = const Value.absent(),
+    this.currencyCode = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<Business> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<String>? currencyCode,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (currencyCode != null) 'currency_code': currencyCode,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  BusinessesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? name,
+      Value<String?>? description,
+      Value<String>? currencyCode,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt}) {
+    return BusinessesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      currencyCode: currencyCode ?? this.currencyCode,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (currencyCode.present) {
+      map['currency_code'] = Variable<String>(currencyCode.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BusinessesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('currencyCode: $currencyCode, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $WalletAccountsTable extends WalletAccounts
     with TableInfo<$WalletAccountsTable, WalletAccount> {
   @override
@@ -18,6 +362,16 @@ class $WalletAccountsTable extends WalletAccounts
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -86,6 +440,7 @@ class $WalletAccountsTable extends WalletAccounts
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        businessId,
         name,
         openingBalance,
         currentBalance,
@@ -107,6 +462,12 @@ class $WalletAccountsTable extends WalletAccounts
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -159,6 +520,8 @@ class $WalletAccountsTable extends WalletAccounts
     return WalletAccount(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       openingBalance: attachedDatabase.typeMapping.read(
@@ -186,6 +549,7 @@ class $WalletAccountsTable extends WalletAccounts
 
 class WalletAccount extends DataClass implements Insertable<WalletAccount> {
   final int id;
+  final int businessId;
   final String name;
   final double openingBalance;
   final double currentBalance;
@@ -196,6 +560,7 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
   final DateTime updatedAt;
   const WalletAccount(
       {required this.id,
+      required this.businessId,
       required this.name,
       required this.openingBalance,
       required this.currentBalance,
@@ -208,6 +573,7 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['name'] = Variable<String>(name);
     map['opening_balance'] = Variable<double>(openingBalance);
     map['current_balance'] = Variable<double>(currentBalance);
@@ -224,6 +590,7 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
   WalletAccountsCompanion toCompanion(bool nullToAbsent) {
     return WalletAccountsCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       name: Value(name),
       openingBalance: Value(openingBalance),
       currentBalance: Value(currentBalance),
@@ -241,6 +608,7 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return WalletAccount(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       name: serializer.fromJson<String>(json['name']),
       openingBalance: serializer.fromJson<double>(json['openingBalance']),
       currentBalance: serializer.fromJson<double>(json['currentBalance']),
@@ -256,6 +624,7 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'name': serializer.toJson<String>(name),
       'openingBalance': serializer.toJson<double>(openingBalance),
       'currentBalance': serializer.toJson<double>(currentBalance),
@@ -269,6 +638,7 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
 
   WalletAccount copyWith(
           {int? id,
+          int? businessId,
           String? name,
           double? openingBalance,
           double? currentBalance,
@@ -279,6 +649,7 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
           DateTime? updatedAt}) =>
       WalletAccount(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         name: name ?? this.name,
         openingBalance: openingBalance ?? this.openingBalance,
         currentBalance: currentBalance ?? this.currentBalance,
@@ -291,6 +662,8 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
   WalletAccount copyWithCompanion(WalletAccountsCompanion data) {
     return WalletAccount(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       name: data.name.present ? data.name.value : this.name,
       openingBalance: data.openingBalance.present
           ? data.openingBalance.value
@@ -312,6 +685,7 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
   String toString() {
     return (StringBuffer('WalletAccount(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('openingBalance: $openingBalance, ')
           ..write('currentBalance: $currentBalance, ')
@@ -325,13 +699,14 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
   }
 
   @override
-  int get hashCode => Object.hash(id, name, openingBalance, currentBalance,
-      notes, isActive, overdraftEnabled, createdAt, updatedAt);
+  int get hashCode => Object.hash(id, businessId, name, openingBalance,
+      currentBalance, notes, isActive, overdraftEnabled, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is WalletAccount &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.name == this.name &&
           other.openingBalance == this.openingBalance &&
           other.currentBalance == this.currentBalance &&
@@ -344,6 +719,7 @@ class WalletAccount extends DataClass implements Insertable<WalletAccount> {
 
 class WalletAccountsCompanion extends UpdateCompanion<WalletAccount> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> name;
   final Value<double> openingBalance;
   final Value<double> currentBalance;
@@ -354,6 +730,7 @@ class WalletAccountsCompanion extends UpdateCompanion<WalletAccount> {
   final Value<DateTime> updatedAt;
   const WalletAccountsCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.name = const Value.absent(),
     this.openingBalance = const Value.absent(),
     this.currentBalance = const Value.absent(),
@@ -365,6 +742,7 @@ class WalletAccountsCompanion extends UpdateCompanion<WalletAccount> {
   });
   WalletAccountsCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String name,
     this.openingBalance = const Value.absent(),
     this.currentBalance = const Value.absent(),
@@ -376,6 +754,7 @@ class WalletAccountsCompanion extends UpdateCompanion<WalletAccount> {
   }) : name = Value(name);
   static Insertable<WalletAccount> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? name,
     Expression<double>? openingBalance,
     Expression<double>? currentBalance,
@@ -387,6 +766,7 @@ class WalletAccountsCompanion extends UpdateCompanion<WalletAccount> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (name != null) 'name': name,
       if (openingBalance != null) 'opening_balance': openingBalance,
       if (currentBalance != null) 'current_balance': currentBalance,
@@ -400,6 +780,7 @@ class WalletAccountsCompanion extends UpdateCompanion<WalletAccount> {
 
   WalletAccountsCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? name,
       Value<double>? openingBalance,
       Value<double>? currentBalance,
@@ -410,6 +791,7 @@ class WalletAccountsCompanion extends UpdateCompanion<WalletAccount> {
       Value<DateTime>? updatedAt}) {
     return WalletAccountsCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       name: name ?? this.name,
       openingBalance: openingBalance ?? this.openingBalance,
       currentBalance: currentBalance ?? this.currentBalance,
@@ -426,6 +808,9 @@ class WalletAccountsCompanion extends UpdateCompanion<WalletAccount> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -458,6 +843,7 @@ class WalletAccountsCompanion extends UpdateCompanion<WalletAccount> {
   String toString() {
     return (StringBuffer('WalletAccountsCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('openingBalance: $openingBalance, ')
           ..write('currentBalance: $currentBalance, ')
@@ -486,6 +872,16 @@ class $SuppliersTable extends Suppliers
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -576,6 +972,7 @@ class $SuppliersTable extends Suppliers
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        businessId,
         name,
         phone,
         email,
@@ -601,6 +998,12 @@ class $SuppliersTable extends Suppliers
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -671,6 +1074,8 @@ class $SuppliersTable extends Suppliers
     return Supplier(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       phone: attachedDatabase.typeMapping
@@ -706,6 +1111,7 @@ class $SuppliersTable extends Suppliers
 
 class Supplier extends DataClass implements Insertable<Supplier> {
   final int id;
+  final int businessId;
   final String name;
   final String? phone;
   final String? email;
@@ -720,6 +1126,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
   final DateTime updatedAt;
   const Supplier(
       {required this.id,
+      required this.businessId,
       required this.name,
       this.phone,
       this.email,
@@ -736,6 +1143,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || phone != null) {
       map['phone'] = Variable<String>(phone);
@@ -762,6 +1170,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
   SuppliersCompanion toCompanion(bool nullToAbsent) {
     return SuppliersCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       name: Value(name),
       phone:
           phone == null && nullToAbsent ? const Value.absent() : Value(phone),
@@ -787,6 +1196,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Supplier(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       name: serializer.fromJson<String>(json['name']),
       phone: serializer.fromJson<String?>(json['phone']),
       email: serializer.fromJson<String?>(json['email']),
@@ -806,6 +1216,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'name': serializer.toJson<String>(name),
       'phone': serializer.toJson<String?>(phone),
       'email': serializer.toJson<String?>(email),
@@ -823,6 +1234,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
 
   Supplier copyWith(
           {int? id,
+          int? businessId,
           String? name,
           Value<String?> phone = const Value.absent(),
           Value<String?> email = const Value.absent(),
@@ -837,6 +1249,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
           DateTime? updatedAt}) =>
       Supplier(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         name: name ?? this.name,
         phone: phone.present ? phone.value : this.phone,
         email: email.present ? email.value : this.email,
@@ -853,6 +1266,8 @@ class Supplier extends DataClass implements Insertable<Supplier> {
   Supplier copyWithCompanion(SuppliersCompanion data) {
     return Supplier(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       name: data.name.present ? data.name.value : this.name,
       phone: data.phone.present ? data.phone.value : this.phone,
       email: data.email.present ? data.email.value : this.email,
@@ -879,6 +1294,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
   String toString() {
     return (StringBuffer('Supplier(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('email: $email, ')
@@ -898,6 +1314,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
   @override
   int get hashCode => Object.hash(
       id,
+      businessId,
       name,
       phone,
       email,
@@ -915,6 +1332,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
       identical(this, other) ||
       (other is Supplier &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.name == this.name &&
           other.phone == this.phone &&
           other.email == this.email &&
@@ -931,6 +1349,7 @@ class Supplier extends DataClass implements Insertable<Supplier> {
 
 class SuppliersCompanion extends UpdateCompanion<Supplier> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> name;
   final Value<String?> phone;
   final Value<String?> email;
@@ -945,6 +1364,7 @@ class SuppliersCompanion extends UpdateCompanion<Supplier> {
   final Value<DateTime> updatedAt;
   const SuppliersCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.name = const Value.absent(),
     this.phone = const Value.absent(),
     this.email = const Value.absent(),
@@ -960,6 +1380,7 @@ class SuppliersCompanion extends UpdateCompanion<Supplier> {
   });
   SuppliersCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String name,
     this.phone = const Value.absent(),
     this.email = const Value.absent(),
@@ -975,6 +1396,7 @@ class SuppliersCompanion extends UpdateCompanion<Supplier> {
   }) : name = Value(name);
   static Insertable<Supplier> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? name,
     Expression<String>? phone,
     Expression<String>? email,
@@ -990,6 +1412,7 @@ class SuppliersCompanion extends UpdateCompanion<Supplier> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (name != null) 'name': name,
       if (phone != null) 'phone': phone,
       if (email != null) 'email': email,
@@ -1007,6 +1430,7 @@ class SuppliersCompanion extends UpdateCompanion<Supplier> {
 
   SuppliersCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? name,
       Value<String?>? phone,
       Value<String?>? email,
@@ -1021,6 +1445,7 @@ class SuppliersCompanion extends UpdateCompanion<Supplier> {
       Value<DateTime>? updatedAt}) {
     return SuppliersCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       email: email ?? this.email,
@@ -1041,6 +1466,9 @@ class SuppliersCompanion extends UpdateCompanion<Supplier> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -1085,6 +1513,7 @@ class SuppliersCompanion extends UpdateCompanion<Supplier> {
   String toString() {
     return (StringBuffer('SuppliersCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('email: $email, ')
@@ -1117,6 +1546,16 @@ class $CustomersTable extends Customers
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -1207,6 +1646,7 @@ class $CustomersTable extends Customers
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        businessId,
         name,
         phone,
         email,
@@ -1232,6 +1672,12 @@ class $CustomersTable extends Customers
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -1302,6 +1748,8 @@ class $CustomersTable extends Customers
     return Customer(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       phone: attachedDatabase.typeMapping
@@ -1337,6 +1785,7 @@ class $CustomersTable extends Customers
 
 class Customer extends DataClass implements Insertable<Customer> {
   final int id;
+  final int businessId;
   final String name;
   final String? phone;
   final String? email;
@@ -1351,6 +1800,7 @@ class Customer extends DataClass implements Insertable<Customer> {
   final DateTime updatedAt;
   const Customer(
       {required this.id,
+      required this.businessId,
       required this.name,
       this.phone,
       this.email,
@@ -1367,6 +1817,7 @@ class Customer extends DataClass implements Insertable<Customer> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || phone != null) {
       map['phone'] = Variable<String>(phone);
@@ -1393,6 +1844,7 @@ class Customer extends DataClass implements Insertable<Customer> {
   CustomersCompanion toCompanion(bool nullToAbsent) {
     return CustomersCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       name: Value(name),
       phone:
           phone == null && nullToAbsent ? const Value.absent() : Value(phone),
@@ -1418,6 +1870,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Customer(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       name: serializer.fromJson<String>(json['name']),
       phone: serializer.fromJson<String?>(json['phone']),
       email: serializer.fromJson<String?>(json['email']),
@@ -1437,6 +1890,7 @@ class Customer extends DataClass implements Insertable<Customer> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'name': serializer.toJson<String>(name),
       'phone': serializer.toJson<String?>(phone),
       'email': serializer.toJson<String?>(email),
@@ -1454,6 +1908,7 @@ class Customer extends DataClass implements Insertable<Customer> {
 
   Customer copyWith(
           {int? id,
+          int? businessId,
           String? name,
           Value<String?> phone = const Value.absent(),
           Value<String?> email = const Value.absent(),
@@ -1468,6 +1923,7 @@ class Customer extends DataClass implements Insertable<Customer> {
           DateTime? updatedAt}) =>
       Customer(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         name: name ?? this.name,
         phone: phone.present ? phone.value : this.phone,
         email: email.present ? email.value : this.email,
@@ -1484,6 +1940,8 @@ class Customer extends DataClass implements Insertable<Customer> {
   Customer copyWithCompanion(CustomersCompanion data) {
     return Customer(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       name: data.name.present ? data.name.value : this.name,
       phone: data.phone.present ? data.phone.value : this.phone,
       email: data.email.present ? data.email.value : this.email,
@@ -1509,6 +1967,7 @@ class Customer extends DataClass implements Insertable<Customer> {
   String toString() {
     return (StringBuffer('Customer(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('email: $email, ')
@@ -1528,6 +1987,7 @@ class Customer extends DataClass implements Insertable<Customer> {
   @override
   int get hashCode => Object.hash(
       id,
+      businessId,
       name,
       phone,
       email,
@@ -1545,6 +2005,7 @@ class Customer extends DataClass implements Insertable<Customer> {
       identical(this, other) ||
       (other is Customer &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.name == this.name &&
           other.phone == this.phone &&
           other.email == this.email &&
@@ -1561,6 +2022,7 @@ class Customer extends DataClass implements Insertable<Customer> {
 
 class CustomersCompanion extends UpdateCompanion<Customer> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> name;
   final Value<String?> phone;
   final Value<String?> email;
@@ -1575,6 +2037,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
   final Value<DateTime> updatedAt;
   const CustomersCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.name = const Value.absent(),
     this.phone = const Value.absent(),
     this.email = const Value.absent(),
@@ -1590,6 +2053,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
   });
   CustomersCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String name,
     this.phone = const Value.absent(),
     this.email = const Value.absent(),
@@ -1605,6 +2069,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
   }) : name = Value(name);
   static Insertable<Customer> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? name,
     Expression<String>? phone,
     Expression<String>? email,
@@ -1620,6 +2085,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (name != null) 'name': name,
       if (phone != null) 'phone': phone,
       if (email != null) 'email': email,
@@ -1637,6 +2103,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
 
   CustomersCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? name,
       Value<String?>? phone,
       Value<String?>? email,
@@ -1651,6 +2118,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
       Value<DateTime>? updatedAt}) {
     return CustomersCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       email: email ?? this.email,
@@ -1671,6 +2139,9 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -1715,6 +2186,7 @@ class CustomersCompanion extends UpdateCompanion<Customer> {
   String toString() {
     return (StringBuffer('CustomersCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('email: $email, ')
@@ -1747,6 +2219,16 @@ class $PurchasesTable extends Purchases
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _referenceNumberMeta =
       const VerificationMeta('referenceNumber');
   @override
@@ -1811,6 +2293,7 @@ class $PurchasesTable extends Purchases
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        businessId,
         referenceNumber,
         supplierId,
         walletAccountId,
@@ -1833,6 +2316,12 @@ class $PurchasesTable extends Purchases
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('reference_number')) {
       context.handle(
@@ -1901,6 +2390,8 @@ class $PurchasesTable extends Purchases
     return Purchase(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       referenceNumber: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}reference_number'])!,
       supplierId: attachedDatabase.typeMapping
@@ -1930,6 +2421,7 @@ class $PurchasesTable extends Purchases
 
 class Purchase extends DataClass implements Insertable<Purchase> {
   final int id;
+  final int businessId;
   final String referenceNumber;
   final int supplierId;
   final int walletAccountId;
@@ -1941,6 +2433,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
   final DateTime createdAt;
   const Purchase(
       {required this.id,
+      required this.businessId,
       required this.referenceNumber,
       required this.supplierId,
       required this.walletAccountId,
@@ -1954,6 +2447,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['reference_number'] = Variable<String>(referenceNumber);
     map['supplier_id'] = Variable<int>(supplierId);
     map['wallet_account_id'] = Variable<int>(walletAccountId);
@@ -1971,6 +2465,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
   PurchasesCompanion toCompanion(bool nullToAbsent) {
     return PurchasesCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       referenceNumber: Value(referenceNumber),
       supplierId: Value(supplierId),
       walletAccountId: Value(walletAccountId),
@@ -1989,6 +2484,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Purchase(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       referenceNumber: serializer.fromJson<String>(json['referenceNumber']),
       supplierId: serializer.fromJson<int>(json['supplierId']),
       walletAccountId: serializer.fromJson<int>(json['walletAccountId']),
@@ -2005,6 +2501,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'referenceNumber': serializer.toJson<String>(referenceNumber),
       'supplierId': serializer.toJson<int>(supplierId),
       'walletAccountId': serializer.toJson<int>(walletAccountId),
@@ -2019,6 +2516,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
 
   Purchase copyWith(
           {int? id,
+          int? businessId,
           String? referenceNumber,
           int? supplierId,
           int? walletAccountId,
@@ -2030,6 +2528,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           DateTime? createdAt}) =>
       Purchase(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         referenceNumber: referenceNumber ?? this.referenceNumber,
         supplierId: supplierId ?? this.supplierId,
         walletAccountId: walletAccountId ?? this.walletAccountId,
@@ -2043,6 +2542,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
   Purchase copyWithCompanion(PurchasesCompanion data) {
     return Purchase(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       referenceNumber: data.referenceNumber.present
           ? data.referenceNumber.value
           : this.referenceNumber,
@@ -2066,6 +2567,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
   String toString() {
     return (StringBuffer('Purchase(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('supplierId: $supplierId, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -2082,6 +2584,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
   @override
   int get hashCode => Object.hash(
       id,
+      businessId,
       referenceNumber,
       supplierId,
       walletAccountId,
@@ -2096,6 +2599,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       identical(this, other) ||
       (other is Purchase &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.referenceNumber == this.referenceNumber &&
           other.supplierId == this.supplierId &&
           other.walletAccountId == this.walletAccountId &&
@@ -2109,6 +2613,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
 
 class PurchasesCompanion extends UpdateCompanion<Purchase> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> referenceNumber;
   final Value<int> supplierId;
   final Value<int> walletAccountId;
@@ -2120,6 +2625,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
   final Value<DateTime> createdAt;
   const PurchasesCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.referenceNumber = const Value.absent(),
     this.supplierId = const Value.absent(),
     this.walletAccountId = const Value.absent(),
@@ -2132,6 +2638,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
   });
   PurchasesCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String referenceNumber,
     required int supplierId,
     required int walletAccountId,
@@ -2149,6 +2656,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
         date = Value(date);
   static Insertable<Purchase> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? referenceNumber,
     Expression<int>? supplierId,
     Expression<int>? walletAccountId,
@@ -2161,6 +2669,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (referenceNumber != null) 'reference_number': referenceNumber,
       if (supplierId != null) 'supplier_id': supplierId,
       if (walletAccountId != null) 'wallet_account_id': walletAccountId,
@@ -2175,6 +2684,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
 
   PurchasesCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? referenceNumber,
       Value<int>? supplierId,
       Value<int>? walletAccountId,
@@ -2186,6 +2696,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       Value<DateTime>? createdAt}) {
     return PurchasesCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       referenceNumber: referenceNumber ?? this.referenceNumber,
       supplierId: supplierId ?? this.supplierId,
       walletAccountId: walletAccountId ?? this.walletAccountId,
@@ -2203,6 +2714,9 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (referenceNumber.present) {
       map['reference_number'] = Variable<String>(referenceNumber.value);
@@ -2238,6 +2752,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
   String toString() {
     return (StringBuffer('PurchasesCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('supplierId: $supplierId, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -2266,6 +2781,16 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _referenceNumberMeta =
       const VerificationMeta('referenceNumber');
   @override
@@ -2321,6 +2846,7 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        businessId,
         referenceNumber,
         customerId,
         amount,
@@ -2342,6 +2868,12 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('reference_number')) {
       context.handle(
@@ -2402,6 +2934,8 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
     return Sale(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       referenceNumber: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}reference_number'])!,
       customerId: attachedDatabase.typeMapping
@@ -2429,6 +2963,7 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
 
 class Sale extends DataClass implements Insertable<Sale> {
   final int id;
+  final int businessId;
   final String referenceNumber;
   final int customerId;
   final double amount;
@@ -2439,6 +2974,7 @@ class Sale extends DataClass implements Insertable<Sale> {
   final DateTime createdAt;
   const Sale(
       {required this.id,
+      required this.businessId,
       required this.referenceNumber,
       required this.customerId,
       required this.amount,
@@ -2451,6 +2987,7 @@ class Sale extends DataClass implements Insertable<Sale> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['reference_number'] = Variable<String>(referenceNumber);
     map['customer_id'] = Variable<int>(customerId);
     map['amount'] = Variable<double>(amount);
@@ -2467,6 +3004,7 @@ class Sale extends DataClass implements Insertable<Sale> {
   SalesCompanion toCompanion(bool nullToAbsent) {
     return SalesCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       referenceNumber: Value(referenceNumber),
       customerId: Value(customerId),
       amount: Value(amount),
@@ -2484,6 +3022,7 @@ class Sale extends DataClass implements Insertable<Sale> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Sale(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       referenceNumber: serializer.fromJson<String>(json['referenceNumber']),
       customerId: serializer.fromJson<int>(json['customerId']),
       amount: serializer.fromJson<double>(json['amount']),
@@ -2499,6 +3038,7 @@ class Sale extends DataClass implements Insertable<Sale> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'referenceNumber': serializer.toJson<String>(referenceNumber),
       'customerId': serializer.toJson<int>(customerId),
       'amount': serializer.toJson<double>(amount),
@@ -2512,6 +3052,7 @@ class Sale extends DataClass implements Insertable<Sale> {
 
   Sale copyWith(
           {int? id,
+          int? businessId,
           String? referenceNumber,
           int? customerId,
           double? amount,
@@ -2522,6 +3063,7 @@ class Sale extends DataClass implements Insertable<Sale> {
           DateTime? createdAt}) =>
       Sale(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         referenceNumber: referenceNumber ?? this.referenceNumber,
         customerId: customerId ?? this.customerId,
         amount: amount ?? this.amount,
@@ -2534,6 +3076,8 @@ class Sale extends DataClass implements Insertable<Sale> {
   Sale copyWithCompanion(SalesCompanion data) {
     return Sale(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       referenceNumber: data.referenceNumber.present
           ? data.referenceNumber.value
           : this.referenceNumber,
@@ -2554,6 +3098,7 @@ class Sale extends DataClass implements Insertable<Sale> {
   String toString() {
     return (StringBuffer('Sale(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('customerId: $customerId, ')
           ..write('amount: $amount, ')
@@ -2567,13 +3112,14 @@ class Sale extends DataClass implements Insertable<Sale> {
   }
 
   @override
-  int get hashCode => Object.hash(id, referenceNumber, customerId, amount,
-      advanceApplied, netAmount, notes, date, createdAt);
+  int get hashCode => Object.hash(id, businessId, referenceNumber, customerId,
+      amount, advanceApplied, netAmount, notes, date, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Sale &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.referenceNumber == this.referenceNumber &&
           other.customerId == this.customerId &&
           other.amount == this.amount &&
@@ -2586,6 +3132,7 @@ class Sale extends DataClass implements Insertable<Sale> {
 
 class SalesCompanion extends UpdateCompanion<Sale> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> referenceNumber;
   final Value<int> customerId;
   final Value<double> amount;
@@ -2596,6 +3143,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
   final Value<DateTime> createdAt;
   const SalesCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.referenceNumber = const Value.absent(),
     this.customerId = const Value.absent(),
     this.amount = const Value.absent(),
@@ -2607,6 +3155,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
   });
   SalesCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String referenceNumber,
     required int customerId,
     required double amount,
@@ -2622,6 +3171,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
         date = Value(date);
   static Insertable<Sale> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? referenceNumber,
     Expression<int>? customerId,
     Expression<double>? amount,
@@ -2633,6 +3183,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (referenceNumber != null) 'reference_number': referenceNumber,
       if (customerId != null) 'customer_id': customerId,
       if (amount != null) 'amount': amount,
@@ -2646,6 +3197,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
 
   SalesCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? referenceNumber,
       Value<int>? customerId,
       Value<double>? amount,
@@ -2656,6 +3208,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       Value<DateTime>? createdAt}) {
     return SalesCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       referenceNumber: referenceNumber ?? this.referenceNumber,
       customerId: customerId ?? this.customerId,
       amount: amount ?? this.amount,
@@ -2672,6 +3225,9 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (referenceNumber.present) {
       map['reference_number'] = Variable<String>(referenceNumber.value);
@@ -2704,6 +3260,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
   String toString() {
     return (StringBuffer('SalesCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('customerId: $customerId, ')
           ..write('amount: $amount, ')
@@ -2732,6 +3289,16 @@ class $SupplierPaymentsTable extends SupplierPayments
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _referenceNumberMeta =
       const VerificationMeta('referenceNumber');
   @override
@@ -2798,6 +3365,7 @@ class $SupplierPaymentsTable extends SupplierPayments
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        businessId,
         referenceNumber,
         supplierId,
         walletAccountId,
@@ -2820,6 +3388,12 @@ class $SupplierPaymentsTable extends SupplierPayments
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('reference_number')) {
       context.handle(
@@ -2888,6 +3462,8 @@ class $SupplierPaymentsTable extends SupplierPayments
     return SupplierPayment(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       referenceNumber: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}reference_number'])!,
       supplierId: attachedDatabase.typeMapping
@@ -2917,6 +3493,7 @@ class $SupplierPaymentsTable extends SupplierPayments
 
 class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
   final int id;
+  final int businessId;
   final String referenceNumber;
   final int supplierId;
   final int walletAccountId;
@@ -2928,6 +3505,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
   final DateTime createdAt;
   const SupplierPayment(
       {required this.id,
+      required this.businessId,
       required this.referenceNumber,
       required this.supplierId,
       required this.walletAccountId,
@@ -2941,6 +3519,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['reference_number'] = Variable<String>(referenceNumber);
     map['supplier_id'] = Variable<int>(supplierId);
     map['wallet_account_id'] = Variable<int>(walletAccountId);
@@ -2958,6 +3537,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
   SupplierPaymentsCompanion toCompanion(bool nullToAbsent) {
     return SupplierPaymentsCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       referenceNumber: Value(referenceNumber),
       supplierId: Value(supplierId),
       walletAccountId: Value(walletAccountId),
@@ -2976,6 +3556,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SupplierPayment(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       referenceNumber: serializer.fromJson<String>(json['referenceNumber']),
       supplierId: serializer.fromJson<int>(json['supplierId']),
       walletAccountId: serializer.fromJson<int>(json['walletAccountId']),
@@ -2993,6 +3574,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'referenceNumber': serializer.toJson<String>(referenceNumber),
       'supplierId': serializer.toJson<int>(supplierId),
       'walletAccountId': serializer.toJson<int>(walletAccountId),
@@ -3007,6 +3589,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
 
   SupplierPayment copyWith(
           {int? id,
+          int? businessId,
           String? referenceNumber,
           int? supplierId,
           int? walletAccountId,
@@ -3018,6 +3601,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
           DateTime? createdAt}) =>
       SupplierPayment(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         referenceNumber: referenceNumber ?? this.referenceNumber,
         supplierId: supplierId ?? this.supplierId,
         walletAccountId: walletAccountId ?? this.walletAccountId,
@@ -3031,6 +3615,8 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
   SupplierPayment copyWithCompanion(SupplierPaymentsCompanion data) {
     return SupplierPayment(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       referenceNumber: data.referenceNumber.present
           ? data.referenceNumber.value
           : this.referenceNumber,
@@ -3056,6 +3642,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
   String toString() {
     return (StringBuffer('SupplierPayment(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('supplierId: $supplierId, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -3072,6 +3659,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
   @override
   int get hashCode => Object.hash(
       id,
+      businessId,
       referenceNumber,
       supplierId,
       walletAccountId,
@@ -3086,6 +3674,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
       identical(this, other) ||
       (other is SupplierPayment &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.referenceNumber == this.referenceNumber &&
           other.supplierId == this.supplierId &&
           other.walletAccountId == this.walletAccountId &&
@@ -3099,6 +3688,7 @@ class SupplierPayment extends DataClass implements Insertable<SupplierPayment> {
 
 class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPayment> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> referenceNumber;
   final Value<int> supplierId;
   final Value<int> walletAccountId;
@@ -3110,6 +3700,7 @@ class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPayment> {
   final Value<DateTime> createdAt;
   const SupplierPaymentsCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.referenceNumber = const Value.absent(),
     this.supplierId = const Value.absent(),
     this.walletAccountId = const Value.absent(),
@@ -3122,6 +3713,7 @@ class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPayment> {
   });
   SupplierPaymentsCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String referenceNumber,
     required int supplierId,
     required int walletAccountId,
@@ -3138,6 +3730,7 @@ class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPayment> {
         date = Value(date);
   static Insertable<SupplierPayment> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? referenceNumber,
     Expression<int>? supplierId,
     Expression<int>? walletAccountId,
@@ -3150,6 +3743,7 @@ class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPayment> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (referenceNumber != null) 'reference_number': referenceNumber,
       if (supplierId != null) 'supplier_id': supplierId,
       if (walletAccountId != null) 'wallet_account_id': walletAccountId,
@@ -3164,6 +3758,7 @@ class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPayment> {
 
   SupplierPaymentsCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? referenceNumber,
       Value<int>? supplierId,
       Value<int>? walletAccountId,
@@ -3175,6 +3770,7 @@ class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPayment> {
       Value<DateTime>? createdAt}) {
     return SupplierPaymentsCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       referenceNumber: referenceNumber ?? this.referenceNumber,
       supplierId: supplierId ?? this.supplierId,
       walletAccountId: walletAccountId ?? this.walletAccountId,
@@ -3192,6 +3788,9 @@ class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPayment> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (referenceNumber.present) {
       map['reference_number'] = Variable<String>(referenceNumber.value);
@@ -3227,6 +3826,7 @@ class SupplierPaymentsCompanion extends UpdateCompanion<SupplierPayment> {
   String toString() {
     return (StringBuffer('SupplierPaymentsCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('supplierId: $supplierId, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -3256,6 +3856,16 @@ class $CustomerPaymentsTable extends CustomerPayments
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _referenceNumberMeta =
       const VerificationMeta('referenceNumber');
   @override
@@ -3322,6 +3932,7 @@ class $CustomerPaymentsTable extends CustomerPayments
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        businessId,
         referenceNumber,
         customerId,
         walletAccountId,
@@ -3344,6 +3955,12 @@ class $CustomerPaymentsTable extends CustomerPayments
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('reference_number')) {
       context.handle(
@@ -3412,6 +4029,8 @@ class $CustomerPaymentsTable extends CustomerPayments
     return CustomerPayment(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       referenceNumber: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}reference_number'])!,
       customerId: attachedDatabase.typeMapping
@@ -3441,6 +4060,7 @@ class $CustomerPaymentsTable extends CustomerPayments
 
 class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
   final int id;
+  final int businessId;
   final String referenceNumber;
   final int customerId;
   final int walletAccountId;
@@ -3452,6 +4072,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
   final DateTime createdAt;
   const CustomerPayment(
       {required this.id,
+      required this.businessId,
       required this.referenceNumber,
       required this.customerId,
       required this.walletAccountId,
@@ -3465,6 +4086,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['reference_number'] = Variable<String>(referenceNumber);
     map['customer_id'] = Variable<int>(customerId);
     map['wallet_account_id'] = Variable<int>(walletAccountId);
@@ -3482,6 +4104,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
   CustomerPaymentsCompanion toCompanion(bool nullToAbsent) {
     return CustomerPaymentsCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       referenceNumber: Value(referenceNumber),
       customerId: Value(customerId),
       walletAccountId: Value(walletAccountId),
@@ -3500,6 +4123,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CustomerPayment(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       referenceNumber: serializer.fromJson<String>(json['referenceNumber']),
       customerId: serializer.fromJson<int>(json['customerId']),
       walletAccountId: serializer.fromJson<int>(json['walletAccountId']),
@@ -3517,6 +4141,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'referenceNumber': serializer.toJson<String>(referenceNumber),
       'customerId': serializer.toJson<int>(customerId),
       'walletAccountId': serializer.toJson<int>(walletAccountId),
@@ -3531,6 +4156,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
 
   CustomerPayment copyWith(
           {int? id,
+          int? businessId,
           String? referenceNumber,
           int? customerId,
           int? walletAccountId,
@@ -3542,6 +4168,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
           DateTime? createdAt}) =>
       CustomerPayment(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         referenceNumber: referenceNumber ?? this.referenceNumber,
         customerId: customerId ?? this.customerId,
         walletAccountId: walletAccountId ?? this.walletAccountId,
@@ -3555,6 +4182,8 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
   CustomerPayment copyWithCompanion(CustomerPaymentsCompanion data) {
     return CustomerPayment(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       referenceNumber: data.referenceNumber.present
           ? data.referenceNumber.value
           : this.referenceNumber,
@@ -3580,6 +4209,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
   String toString() {
     return (StringBuffer('CustomerPayment(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('customerId: $customerId, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -3596,6 +4226,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
   @override
   int get hashCode => Object.hash(
       id,
+      businessId,
       referenceNumber,
       customerId,
       walletAccountId,
@@ -3610,6 +4241,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
       identical(this, other) ||
       (other is CustomerPayment &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.referenceNumber == this.referenceNumber &&
           other.customerId == this.customerId &&
           other.walletAccountId == this.walletAccountId &&
@@ -3623,6 +4255,7 @@ class CustomerPayment extends DataClass implements Insertable<CustomerPayment> {
 
 class CustomerPaymentsCompanion extends UpdateCompanion<CustomerPayment> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> referenceNumber;
   final Value<int> customerId;
   final Value<int> walletAccountId;
@@ -3634,6 +4267,7 @@ class CustomerPaymentsCompanion extends UpdateCompanion<CustomerPayment> {
   final Value<DateTime> createdAt;
   const CustomerPaymentsCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.referenceNumber = const Value.absent(),
     this.customerId = const Value.absent(),
     this.walletAccountId = const Value.absent(),
@@ -3646,6 +4280,7 @@ class CustomerPaymentsCompanion extends UpdateCompanion<CustomerPayment> {
   });
   CustomerPaymentsCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String referenceNumber,
     required int customerId,
     required int walletAccountId,
@@ -3662,6 +4297,7 @@ class CustomerPaymentsCompanion extends UpdateCompanion<CustomerPayment> {
         date = Value(date);
   static Insertable<CustomerPayment> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? referenceNumber,
     Expression<int>? customerId,
     Expression<int>? walletAccountId,
@@ -3674,6 +4310,7 @@ class CustomerPaymentsCompanion extends UpdateCompanion<CustomerPayment> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (referenceNumber != null) 'reference_number': referenceNumber,
       if (customerId != null) 'customer_id': customerId,
       if (walletAccountId != null) 'wallet_account_id': walletAccountId,
@@ -3688,6 +4325,7 @@ class CustomerPaymentsCompanion extends UpdateCompanion<CustomerPayment> {
 
   CustomerPaymentsCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? referenceNumber,
       Value<int>? customerId,
       Value<int>? walletAccountId,
@@ -3699,6 +4337,7 @@ class CustomerPaymentsCompanion extends UpdateCompanion<CustomerPayment> {
       Value<DateTime>? createdAt}) {
     return CustomerPaymentsCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       referenceNumber: referenceNumber ?? this.referenceNumber,
       customerId: customerId ?? this.customerId,
       walletAccountId: walletAccountId ?? this.walletAccountId,
@@ -3716,6 +4355,9 @@ class CustomerPaymentsCompanion extends UpdateCompanion<CustomerPayment> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (referenceNumber.present) {
       map['reference_number'] = Variable<String>(referenceNumber.value);
@@ -3751,6 +4393,7 @@ class CustomerPaymentsCompanion extends UpdateCompanion<CustomerPayment> {
   String toString() {
     return (StringBuffer('CustomerPaymentsCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('customerId: $customerId, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -3780,6 +4423,16 @@ class $LedgerEntriesTable extends LedgerEntries
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _referenceNumberMeta =
       const VerificationMeta('referenceNumber');
   @override
@@ -3869,6 +4522,7 @@ class $LedgerEntriesTable extends LedgerEntries
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        businessId,
         referenceNumber,
         transactionType,
         walletAccountId,
@@ -3894,6 +4548,12 @@ class $LedgerEntriesTable extends LedgerEntries
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('reference_number')) {
       context.handle(
@@ -3978,6 +4638,8 @@ class $LedgerEntriesTable extends LedgerEntries
     return LedgerEntry(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       referenceNumber: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}reference_number'])!,
       transactionType: attachedDatabase.typeMapping.read(
@@ -4013,6 +4675,7 @@ class $LedgerEntriesTable extends LedgerEntries
 
 class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
   final int id;
+  final int businessId;
   final String referenceNumber;
   final String transactionType;
   final int? walletAccountId;
@@ -4027,6 +4690,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
   final DateTime createdAt;
   const LedgerEntry(
       {required this.id,
+      required this.businessId,
       required this.referenceNumber,
       required this.transactionType,
       this.walletAccountId,
@@ -4043,6 +4707,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['reference_number'] = Variable<String>(referenceNumber);
     map['transaction_type'] = Variable<String>(transactionType);
     if (!nullToAbsent || walletAccountId != null) {
@@ -4069,6 +4734,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
   LedgerEntriesCompanion toCompanion(bool nullToAbsent) {
     return LedgerEntriesCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       referenceNumber: Value(referenceNumber),
       transactionType: Value(transactionType),
       walletAccountId: walletAccountId == null && nullToAbsent
@@ -4097,6 +4763,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return LedgerEntry(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       referenceNumber: serializer.fromJson<String>(json['referenceNumber']),
       transactionType: serializer.fromJson<String>(json['transactionType']),
       walletAccountId: serializer.fromJson<int?>(json['walletAccountId']),
@@ -4117,6 +4784,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'referenceNumber': serializer.toJson<String>(referenceNumber),
       'transactionType': serializer.toJson<String>(transactionType),
       'walletAccountId': serializer.toJson<int?>(walletAccountId),
@@ -4134,6 +4802,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
 
   LedgerEntry copyWith(
           {int? id,
+          int? businessId,
           String? referenceNumber,
           String? transactionType,
           Value<int?> walletAccountId = const Value.absent(),
@@ -4148,6 +4817,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
           DateTime? createdAt}) =>
       LedgerEntry(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         referenceNumber: referenceNumber ?? this.referenceNumber,
         transactionType: transactionType ?? this.transactionType,
         walletAccountId: walletAccountId.present
@@ -4168,6 +4838,8 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
   LedgerEntry copyWithCompanion(LedgerEntriesCompanion data) {
     return LedgerEntry(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       referenceNumber: data.referenceNumber.present
           ? data.referenceNumber.value
           : this.referenceNumber,
@@ -4200,6 +4872,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
   String toString() {
     return (StringBuffer('LedgerEntry(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('transactionType: $transactionType, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -4219,6 +4892,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
   @override
   int get hashCode => Object.hash(
       id,
+      businessId,
       referenceNumber,
       transactionType,
       walletAccountId,
@@ -4236,6 +4910,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
       identical(this, other) ||
       (other is LedgerEntry &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.referenceNumber == this.referenceNumber &&
           other.transactionType == this.transactionType &&
           other.walletAccountId == this.walletAccountId &&
@@ -4252,6 +4927,7 @@ class LedgerEntry extends DataClass implements Insertable<LedgerEntry> {
 
 class LedgerEntriesCompanion extends UpdateCompanion<LedgerEntry> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> referenceNumber;
   final Value<String> transactionType;
   final Value<int?> walletAccountId;
@@ -4266,6 +4942,7 @@ class LedgerEntriesCompanion extends UpdateCompanion<LedgerEntry> {
   final Value<DateTime> createdAt;
   const LedgerEntriesCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.referenceNumber = const Value.absent(),
     this.transactionType = const Value.absent(),
     this.walletAccountId = const Value.absent(),
@@ -4281,6 +4958,7 @@ class LedgerEntriesCompanion extends UpdateCompanion<LedgerEntry> {
   });
   LedgerEntriesCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String referenceNumber,
     required String transactionType,
     this.walletAccountId = const Value.absent(),
@@ -4299,6 +4977,7 @@ class LedgerEntriesCompanion extends UpdateCompanion<LedgerEntry> {
         date = Value(date);
   static Insertable<LedgerEntry> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? referenceNumber,
     Expression<String>? transactionType,
     Expression<int>? walletAccountId,
@@ -4314,6 +4993,7 @@ class LedgerEntriesCompanion extends UpdateCompanion<LedgerEntry> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (referenceNumber != null) 'reference_number': referenceNumber,
       if (transactionType != null) 'transaction_type': transactionType,
       if (walletAccountId != null) 'wallet_account_id': walletAccountId,
@@ -4332,6 +5012,7 @@ class LedgerEntriesCompanion extends UpdateCompanion<LedgerEntry> {
 
   LedgerEntriesCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? referenceNumber,
       Value<String>? transactionType,
       Value<int?>? walletAccountId,
@@ -4346,6 +5027,7 @@ class LedgerEntriesCompanion extends UpdateCompanion<LedgerEntry> {
       Value<DateTime>? createdAt}) {
     return LedgerEntriesCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       referenceNumber: referenceNumber ?? this.referenceNumber,
       transactionType: transactionType ?? this.transactionType,
       walletAccountId: walletAccountId ?? this.walletAccountId,
@@ -4366,6 +5048,9 @@ class LedgerEntriesCompanion extends UpdateCompanion<LedgerEntry> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (referenceNumber.present) {
       map['reference_number'] = Variable<String>(referenceNumber.value);
@@ -4410,6 +5095,7 @@ class LedgerEntriesCompanion extends UpdateCompanion<LedgerEntry> {
   String toString() {
     return (StringBuffer('LedgerEntriesCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('transactionType: $transactionType, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -4442,6 +5128,16 @@ class $ExpenseCategoriesTable extends ExpenseCategories
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -4491,8 +5187,16 @@ class $ExpenseCategoriesTable extends ExpenseCategories
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, name, iconCodepoint, colorHex, monthlyBudget, isActive, createdAt];
+  List<GeneratedColumn> get $columns => [
+        id,
+        businessId,
+        name,
+        iconCodepoint,
+        colorHex,
+        monthlyBudget,
+        isActive,
+        createdAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -4505,6 +5209,12 @@ class $ExpenseCategoriesTable extends ExpenseCategories
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -4547,6 +5257,8 @@ class $ExpenseCategoriesTable extends ExpenseCategories
     return ExpenseCategory(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       iconCodepoint: attachedDatabase.typeMapping
@@ -4570,6 +5282,7 @@ class $ExpenseCategoriesTable extends ExpenseCategories
 
 class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
   final int id;
+  final int businessId;
   final String name;
   final int iconCodepoint;
   final String colorHex;
@@ -4578,6 +5291,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
   final DateTime createdAt;
   const ExpenseCategory(
       {required this.id,
+      required this.businessId,
       required this.name,
       required this.iconCodepoint,
       required this.colorHex,
@@ -4588,6 +5302,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['name'] = Variable<String>(name);
     map['icon_codepoint'] = Variable<int>(iconCodepoint);
     map['color_hex'] = Variable<String>(colorHex);
@@ -4602,6 +5317,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
   ExpenseCategoriesCompanion toCompanion(bool nullToAbsent) {
     return ExpenseCategoriesCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       name: Value(name),
       iconCodepoint: Value(iconCodepoint),
       colorHex: Value(colorHex),
@@ -4618,6 +5334,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ExpenseCategory(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       name: serializer.fromJson<String>(json['name']),
       iconCodepoint: serializer.fromJson<int>(json['iconCodepoint']),
       colorHex: serializer.fromJson<String>(json['colorHex']),
@@ -4631,6 +5348,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'name': serializer.toJson<String>(name),
       'iconCodepoint': serializer.toJson<int>(iconCodepoint),
       'colorHex': serializer.toJson<String>(colorHex),
@@ -4642,6 +5360,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
 
   ExpenseCategory copyWith(
           {int? id,
+          int? businessId,
           String? name,
           int? iconCodepoint,
           String? colorHex,
@@ -4650,6 +5369,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
           DateTime? createdAt}) =>
       ExpenseCategory(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         name: name ?? this.name,
         iconCodepoint: iconCodepoint ?? this.iconCodepoint,
         colorHex: colorHex ?? this.colorHex,
@@ -4661,6 +5381,8 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
   ExpenseCategory copyWithCompanion(ExpenseCategoriesCompanion data) {
     return ExpenseCategory(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       name: data.name.present ? data.name.value : this.name,
       iconCodepoint: data.iconCodepoint.present
           ? data.iconCodepoint.value
@@ -4678,6 +5400,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
   String toString() {
     return (StringBuffer('ExpenseCategory(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('iconCodepoint: $iconCodepoint, ')
           ..write('colorHex: $colorHex, ')
@@ -4689,13 +5412,14 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, name, iconCodepoint, colorHex, monthlyBudget, isActive, createdAt);
+  int get hashCode => Object.hash(id, businessId, name, iconCodepoint, colorHex,
+      monthlyBudget, isActive, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ExpenseCategory &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.name == this.name &&
           other.iconCodepoint == this.iconCodepoint &&
           other.colorHex == this.colorHex &&
@@ -4706,6 +5430,7 @@ class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
 
 class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> name;
   final Value<int> iconCodepoint;
   final Value<String> colorHex;
@@ -4714,6 +5439,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
   final Value<DateTime> createdAt;
   const ExpenseCategoriesCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.name = const Value.absent(),
     this.iconCodepoint = const Value.absent(),
     this.colorHex = const Value.absent(),
@@ -4723,6 +5449,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
   });
   ExpenseCategoriesCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String name,
     this.iconCodepoint = const Value.absent(),
     this.colorHex = const Value.absent(),
@@ -4732,6 +5459,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
   }) : name = Value(name);
   static Insertable<ExpenseCategory> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? name,
     Expression<int>? iconCodepoint,
     Expression<String>? colorHex,
@@ -4741,6 +5469,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (name != null) 'name': name,
       if (iconCodepoint != null) 'icon_codepoint': iconCodepoint,
       if (colorHex != null) 'color_hex': colorHex,
@@ -4752,6 +5481,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
 
   ExpenseCategoriesCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? name,
       Value<int>? iconCodepoint,
       Value<String>? colorHex,
@@ -4760,6 +5490,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
       Value<DateTime>? createdAt}) {
     return ExpenseCategoriesCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       name: name ?? this.name,
       iconCodepoint: iconCodepoint ?? this.iconCodepoint,
       colorHex: colorHex ?? this.colorHex,
@@ -4774,6 +5505,9 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -4800,6 +5534,7 @@ class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
   String toString() {
     return (StringBuffer('ExpenseCategoriesCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('name: $name, ')
           ..write('iconCodepoint: $iconCodepoint, ')
           ..write('colorHex: $colorHex, ')
@@ -4825,6 +5560,16 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _businessIdMeta =
+      const VerificationMeta('businessId');
+  @override
+  late final GeneratedColumn<int> businessId = GeneratedColumn<int>(
+      'business_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES businesses (id)'),
+      defaultValue: const Constant(1));
   static const VerificationMeta _referenceNumberMeta =
       const VerificationMeta('referenceNumber');
   @override
@@ -4881,6 +5626,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   @override
   List<GeneratedColumn> get $columns => [
         id,
+        businessId,
         referenceNumber,
         categoryId,
         walletAccountId,
@@ -4902,6 +5648,12 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+          _businessIdMeta,
+          businessId.isAcceptableOrUnknown(
+              data['business_id']!, _businessIdMeta));
     }
     if (data.containsKey('reference_number')) {
       context.handle(
@@ -4964,6 +5716,8 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     return Expense(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      businessId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}business_id'])!,
       referenceNumber: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}reference_number'])!,
       categoryId: attachedDatabase.typeMapping
@@ -4991,6 +5745,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
 
 class Expense extends DataClass implements Insertable<Expense> {
   final int id;
+  final int businessId;
   final String referenceNumber;
   final int categoryId;
   final int? walletAccountId;
@@ -5001,6 +5756,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   final DateTime createdAt;
   const Expense(
       {required this.id,
+      required this.businessId,
       required this.referenceNumber,
       required this.categoryId,
       this.walletAccountId,
@@ -5013,6 +5769,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['business_id'] = Variable<int>(businessId);
     map['reference_number'] = Variable<String>(referenceNumber);
     map['category_id'] = Variable<int>(categoryId);
     if (!nullToAbsent || walletAccountId != null) {
@@ -5031,6 +5788,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   ExpensesCompanion toCompanion(bool nullToAbsent) {
     return ExpensesCompanion(
       id: Value(id),
+      businessId: Value(businessId),
       referenceNumber: Value(referenceNumber),
       categoryId: Value(categoryId),
       walletAccountId: walletAccountId == null && nullToAbsent
@@ -5050,6 +5808,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Expense(
       id: serializer.fromJson<int>(json['id']),
+      businessId: serializer.fromJson<int>(json['businessId']),
       referenceNumber: serializer.fromJson<String>(json['referenceNumber']),
       categoryId: serializer.fromJson<int>(json['categoryId']),
       walletAccountId: serializer.fromJson<int?>(json['walletAccountId']),
@@ -5065,6 +5824,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'businessId': serializer.toJson<int>(businessId),
       'referenceNumber': serializer.toJson<String>(referenceNumber),
       'categoryId': serializer.toJson<int>(categoryId),
       'walletAccountId': serializer.toJson<int?>(walletAccountId),
@@ -5078,6 +5838,7 @@ class Expense extends DataClass implements Insertable<Expense> {
 
   Expense copyWith(
           {int? id,
+          int? businessId,
           String? referenceNumber,
           int? categoryId,
           Value<int?> walletAccountId = const Value.absent(),
@@ -5088,6 +5849,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           DateTime? createdAt}) =>
       Expense(
         id: id ?? this.id,
+        businessId: businessId ?? this.businessId,
         referenceNumber: referenceNumber ?? this.referenceNumber,
         categoryId: categoryId ?? this.categoryId,
         walletAccountId: walletAccountId.present
@@ -5102,6 +5864,8 @@ class Expense extends DataClass implements Insertable<Expense> {
   Expense copyWithCompanion(ExpensesCompanion data) {
     return Expense(
       id: data.id.present ? data.id.value : this.id,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
       referenceNumber: data.referenceNumber.present
           ? data.referenceNumber.value
           : this.referenceNumber,
@@ -5123,6 +5887,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   String toString() {
     return (StringBuffer('Expense(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('categoryId: $categoryId, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -5136,13 +5901,14 @@ class Expense extends DataClass implements Insertable<Expense> {
   }
 
   @override
-  int get hashCode => Object.hash(id, referenceNumber, categoryId,
+  int get hashCode => Object.hash(id, businessId, referenceNumber, categoryId,
       walletAccountId, amount, description, notes, date, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Expense &&
           other.id == this.id &&
+          other.businessId == this.businessId &&
           other.referenceNumber == this.referenceNumber &&
           other.categoryId == this.categoryId &&
           other.walletAccountId == this.walletAccountId &&
@@ -5155,6 +5921,7 @@ class Expense extends DataClass implements Insertable<Expense> {
 
 class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<int> id;
+  final Value<int> businessId;
   final Value<String> referenceNumber;
   final Value<int> categoryId;
   final Value<int?> walletAccountId;
@@ -5165,6 +5932,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<DateTime> createdAt;
   const ExpensesCompanion({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     this.referenceNumber = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.walletAccountId = const Value.absent(),
@@ -5176,6 +5944,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   });
   ExpensesCompanion.insert({
     this.id = const Value.absent(),
+    this.businessId = const Value.absent(),
     required String referenceNumber,
     required int categoryId,
     this.walletAccountId = const Value.absent(),
@@ -5191,6 +5960,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
         date = Value(date);
   static Insertable<Expense> custom({
     Expression<int>? id,
+    Expression<int>? businessId,
     Expression<String>? referenceNumber,
     Expression<int>? categoryId,
     Expression<int>? walletAccountId,
@@ -5202,6 +5972,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (businessId != null) 'business_id': businessId,
       if (referenceNumber != null) 'reference_number': referenceNumber,
       if (categoryId != null) 'category_id': categoryId,
       if (walletAccountId != null) 'wallet_account_id': walletAccountId,
@@ -5215,6 +5986,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
 
   ExpensesCompanion copyWith(
       {Value<int>? id,
+      Value<int>? businessId,
       Value<String>? referenceNumber,
       Value<int>? categoryId,
       Value<int?>? walletAccountId,
@@ -5225,6 +5997,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       Value<DateTime>? createdAt}) {
     return ExpensesCompanion(
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
       referenceNumber: referenceNumber ?? this.referenceNumber,
       categoryId: categoryId ?? this.categoryId,
       walletAccountId: walletAccountId ?? this.walletAccountId,
@@ -5241,6 +6014,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<int>(businessId.value);
     }
     if (referenceNumber.present) {
       map['reference_number'] = Variable<String>(referenceNumber.value);
@@ -5273,6 +6049,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   String toString() {
     return (StringBuffer('ExpensesCompanion(')
           ..write('id: $id, ')
+          ..write('businessId: $businessId, ')
           ..write('referenceNumber: $referenceNumber, ')
           ..write('categoryId: $categoryId, ')
           ..write('walletAccountId: $walletAccountId, ')
@@ -5289,6 +6066,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final $BusinessesTable businesses = $BusinessesTable(this);
   late final $WalletAccountsTable walletAccounts = $WalletAccountsTable(this);
   late final $SuppliersTable suppliers = $SuppliersTable(this);
   late final $CustomersTable customers = $CustomersTable(this);
@@ -5302,6 +6080,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ExpenseCategoriesTable expenseCategories =
       $ExpenseCategoriesTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
+  late final BusinessDao businessDao = BusinessDao(this as AppDatabase);
   late final WalletDao walletDao = WalletDao(this as AppDatabase);
   late final SupplierDao supplierDao = SupplierDao(this as AppDatabase);
   late final CustomerDao customerDao = CustomerDao(this as AppDatabase);
@@ -5314,6 +6093,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
+        businesses,
         walletAccounts,
         suppliers,
         customers,
@@ -5327,9 +6107,950 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ];
 }
 
+typedef $$BusinessesTableCreateCompanionBuilder = BusinessesCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<String?> description,
+  Value<String> currencyCode,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+typedef $$BusinessesTableUpdateCompanionBuilder = BusinessesCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String?> description,
+  Value<String> currencyCode,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+
+final class $$BusinessesTableReferences
+    extends BaseReferences<_$AppDatabase, $BusinessesTable, Business> {
+  $$BusinessesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$WalletAccountsTable, List<WalletAccount>>
+      _walletAccountsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.walletAccounts,
+              aliasName: $_aliasNameGenerator(
+                  db.businesses.id, db.walletAccounts.businessId));
+
+  $$WalletAccountsTableProcessedTableManager get walletAccountsRefs {
+    final manager = $$WalletAccountsTableTableManager($_db, $_db.walletAccounts)
+        .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_walletAccountsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$SuppliersTable, List<Supplier>>
+      _suppliersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+          db.suppliers,
+          aliasName:
+              $_aliasNameGenerator(db.businesses.id, db.suppliers.businessId));
+
+  $$SuppliersTableProcessedTableManager get suppliersRefs {
+    final manager = $$SuppliersTableTableManager($_db, $_db.suppliers)
+        .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_suppliersRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$CustomersTable, List<Customer>>
+      _customersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+          db.customers,
+          aliasName:
+              $_aliasNameGenerator(db.businesses.id, db.customers.businessId));
+
+  $$CustomersTableProcessedTableManager get customersRefs {
+    final manager = $$CustomersTableTableManager($_db, $_db.customers)
+        .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_customersRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$PurchasesTable, List<Purchase>>
+      _purchasesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+          db.purchases,
+          aliasName:
+              $_aliasNameGenerator(db.businesses.id, db.purchases.businessId));
+
+  $$PurchasesTableProcessedTableManager get purchasesRefs {
+    final manager = $$PurchasesTableTableManager($_db, $_db.purchases)
+        .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_purchasesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$SalesTable, List<Sale>> _salesRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.sales,
+          aliasName:
+              $_aliasNameGenerator(db.businesses.id, db.sales.businessId));
+
+  $$SalesTableProcessedTableManager get salesRefs {
+    final manager = $$SalesTableTableManager($_db, $_db.sales)
+        .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_salesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$SupplierPaymentsTable, List<SupplierPayment>>
+      _supplierPaymentsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.supplierPayments,
+              aliasName: $_aliasNameGenerator(
+                  db.businesses.id, db.supplierPayments.businessId));
+
+  $$SupplierPaymentsTableProcessedTableManager get supplierPaymentsRefs {
+    final manager =
+        $$SupplierPaymentsTableTableManager($_db, $_db.supplierPayments)
+            .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_supplierPaymentsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$CustomerPaymentsTable, List<CustomerPayment>>
+      _customerPaymentsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.customerPayments,
+              aliasName: $_aliasNameGenerator(
+                  db.businesses.id, db.customerPayments.businessId));
+
+  $$CustomerPaymentsTableProcessedTableManager get customerPaymentsRefs {
+    final manager =
+        $$CustomerPaymentsTableTableManager($_db, $_db.customerPayments)
+            .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_customerPaymentsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$LedgerEntriesTable, List<LedgerEntry>>
+      _ledgerEntriesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.ledgerEntries,
+              aliasName: $_aliasNameGenerator(
+                  db.businesses.id, db.ledgerEntries.businessId));
+
+  $$LedgerEntriesTableProcessedTableManager get ledgerEntriesRefs {
+    final manager = $$LedgerEntriesTableTableManager($_db, $_db.ledgerEntries)
+        .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_ledgerEntriesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$ExpenseCategoriesTable, List<ExpenseCategory>>
+      _expenseCategoriesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.expenseCategories,
+              aliasName: $_aliasNameGenerator(
+                  db.businesses.id, db.expenseCategories.businessId));
+
+  $$ExpenseCategoriesTableProcessedTableManager get expenseCategoriesRefs {
+    final manager =
+        $$ExpenseCategoriesTableTableManager($_db, $_db.expenseCategories)
+            .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_expenseCategoriesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.expenses,
+          aliasName:
+              $_aliasNameGenerator(db.businesses.id, db.expenses.businessId));
+
+  $$ExpensesTableProcessedTableManager get expensesRefs {
+    final manager = $$ExpensesTableTableManager($_db, $_db.expenses)
+        .filter((f) => f.businessId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_expensesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$BusinessesTableFilterComposer
+    extends Composer<_$AppDatabase, $BusinessesTable> {
+  $$BusinessesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get currencyCode => $composableBuilder(
+      column: $table.currencyCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> walletAccountsRefs(
+      Expression<bool> Function($$WalletAccountsTableFilterComposer f) f) {
+    final $$WalletAccountsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.walletAccounts,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletAccountsTableFilterComposer(
+              $db: $db,
+              $table: $db.walletAccounts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> suppliersRefs(
+      Expression<bool> Function($$SuppliersTableFilterComposer f) f) {
+    final $$SuppliersTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.suppliers,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SuppliersTableFilterComposer(
+              $db: $db,
+              $table: $db.suppliers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> customersRefs(
+      Expression<bool> Function($$CustomersTableFilterComposer f) f) {
+    final $$CustomersTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.customers,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CustomersTableFilterComposer(
+              $db: $db,
+              $table: $db.customers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> purchasesRefs(
+      Expression<bool> Function($$PurchasesTableFilterComposer f) f) {
+    final $$PurchasesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.purchases,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PurchasesTableFilterComposer(
+              $db: $db,
+              $table: $db.purchases,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> salesRefs(
+      Expression<bool> Function($$SalesTableFilterComposer f) f) {
+    final $$SalesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.sales,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SalesTableFilterComposer(
+              $db: $db,
+              $table: $db.sales,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> supplierPaymentsRefs(
+      Expression<bool> Function($$SupplierPaymentsTableFilterComposer f) f) {
+    final $$SupplierPaymentsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.supplierPayments,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SupplierPaymentsTableFilterComposer(
+              $db: $db,
+              $table: $db.supplierPayments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> customerPaymentsRefs(
+      Expression<bool> Function($$CustomerPaymentsTableFilterComposer f) f) {
+    final $$CustomerPaymentsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.customerPayments,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CustomerPaymentsTableFilterComposer(
+              $db: $db,
+              $table: $db.customerPayments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> ledgerEntriesRefs(
+      Expression<bool> Function($$LedgerEntriesTableFilterComposer f) f) {
+    final $$LedgerEntriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.ledgerEntries,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$LedgerEntriesTableFilterComposer(
+              $db: $db,
+              $table: $db.ledgerEntries,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> expenseCategoriesRefs(
+      Expression<bool> Function($$ExpenseCategoriesTableFilterComposer f) f) {
+    final $$ExpenseCategoriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.expenseCategories,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpenseCategoriesTableFilterComposer(
+              $db: $db,
+              $table: $db.expenseCategories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> expensesRefs(
+      Expression<bool> Function($$ExpensesTableFilterComposer f) f) {
+    final $$ExpensesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.expenses,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpensesTableFilterComposer(
+              $db: $db,
+              $table: $db.expenses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$BusinessesTableOrderingComposer
+    extends Composer<_$AppDatabase, $BusinessesTable> {
+  $$BusinessesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get currencyCode => $composableBuilder(
+      column: $table.currencyCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$BusinessesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BusinessesTable> {
+  $$BusinessesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<String> get currencyCode => $composableBuilder(
+      column: $table.currencyCode, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> walletAccountsRefs<T extends Object>(
+      Expression<T> Function($$WalletAccountsTableAnnotationComposer a) f) {
+    final $$WalletAccountsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.walletAccounts,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WalletAccountsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.walletAccounts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> suppliersRefs<T extends Object>(
+      Expression<T> Function($$SuppliersTableAnnotationComposer a) f) {
+    final $$SuppliersTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.suppliers,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SuppliersTableAnnotationComposer(
+              $db: $db,
+              $table: $db.suppliers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> customersRefs<T extends Object>(
+      Expression<T> Function($$CustomersTableAnnotationComposer a) f) {
+    final $$CustomersTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.customers,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CustomersTableAnnotationComposer(
+              $db: $db,
+              $table: $db.customers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> purchasesRefs<T extends Object>(
+      Expression<T> Function($$PurchasesTableAnnotationComposer a) f) {
+    final $$PurchasesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.purchases,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PurchasesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.purchases,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> salesRefs<T extends Object>(
+      Expression<T> Function($$SalesTableAnnotationComposer a) f) {
+    final $$SalesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.sales,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SalesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.sales,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> supplierPaymentsRefs<T extends Object>(
+      Expression<T> Function($$SupplierPaymentsTableAnnotationComposer a) f) {
+    final $$SupplierPaymentsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.supplierPayments,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$SupplierPaymentsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.supplierPayments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> customerPaymentsRefs<T extends Object>(
+      Expression<T> Function($$CustomerPaymentsTableAnnotationComposer a) f) {
+    final $$CustomerPaymentsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.customerPayments,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CustomerPaymentsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.customerPayments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> ledgerEntriesRefs<T extends Object>(
+      Expression<T> Function($$LedgerEntriesTableAnnotationComposer a) f) {
+    final $$LedgerEntriesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.ledgerEntries,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$LedgerEntriesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.ledgerEntries,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> expenseCategoriesRefs<T extends Object>(
+      Expression<T> Function($$ExpenseCategoriesTableAnnotationComposer a) f) {
+    final $$ExpenseCategoriesTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.expenseCategories,
+            getReferencedColumn: (t) => t.businessId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$ExpenseCategoriesTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.expenseCategories,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+
+  Expression<T> expensesRefs<T extends Object>(
+      Expression<T> Function($$ExpensesTableAnnotationComposer a) f) {
+    final $$ExpensesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.expenses,
+        getReferencedColumn: (t) => t.businessId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpensesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.expenses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$BusinessesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $BusinessesTable,
+    Business,
+    $$BusinessesTableFilterComposer,
+    $$BusinessesTableOrderingComposer,
+    $$BusinessesTableAnnotationComposer,
+    $$BusinessesTableCreateCompanionBuilder,
+    $$BusinessesTableUpdateCompanionBuilder,
+    (Business, $$BusinessesTableReferences),
+    Business,
+    PrefetchHooks Function(
+        {bool walletAccountsRefs,
+        bool suppliersRefs,
+        bool customersRefs,
+        bool purchasesRefs,
+        bool salesRefs,
+        bool supplierPaymentsRefs,
+        bool customerPaymentsRefs,
+        bool ledgerEntriesRefs,
+        bool expenseCategoriesRefs,
+        bool expensesRefs})> {
+  $$BusinessesTableTableManager(_$AppDatabase db, $BusinessesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BusinessesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BusinessesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BusinessesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> description = const Value.absent(),
+            Value<String> currencyCode = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              BusinessesCompanion(
+            id: id,
+            name: name,
+            description: description,
+            currencyCode: currencyCode,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            Value<String?> description = const Value.absent(),
+            Value<String> currencyCode = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              BusinessesCompanion.insert(
+            id: id,
+            name: name,
+            description: description,
+            currencyCode: currencyCode,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$BusinessesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {walletAccountsRefs = false,
+              suppliersRefs = false,
+              customersRefs = false,
+              purchasesRefs = false,
+              salesRefs = false,
+              supplierPaymentsRefs = false,
+              customerPaymentsRefs = false,
+              ledgerEntriesRefs = false,
+              expenseCategoriesRefs = false,
+              expensesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (walletAccountsRefs) db.walletAccounts,
+                if (suppliersRefs) db.suppliers,
+                if (customersRefs) db.customers,
+                if (purchasesRefs) db.purchases,
+                if (salesRefs) db.sales,
+                if (supplierPaymentsRefs) db.supplierPayments,
+                if (customerPaymentsRefs) db.customerPayments,
+                if (ledgerEntriesRefs) db.ledgerEntries,
+                if (expenseCategoriesRefs) db.expenseCategories,
+                if (expensesRefs) db.expenses
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (walletAccountsRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable,
+                            WalletAccount>(
+                        currentTable: table,
+                        referencedTable: $$BusinessesTableReferences
+                            ._walletAccountsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .walletAccountsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items),
+                  if (suppliersRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable,
+                            Supplier>(
+                        currentTable: table,
+                        referencedTable:
+                            $$BusinessesTableReferences._suppliersRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .suppliersRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items),
+                  if (customersRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable,
+                            Customer>(
+                        currentTable: table,
+                        referencedTable:
+                            $$BusinessesTableReferences._customersRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .customersRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items),
+                  if (purchasesRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable,
+                            Purchase>(
+                        currentTable: table,
+                        referencedTable:
+                            $$BusinessesTableReferences._purchasesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .purchasesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items),
+                  if (salesRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable, Sale>(
+                        currentTable: table,
+                        referencedTable:
+                            $$BusinessesTableReferences._salesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .salesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items),
+                  if (supplierPaymentsRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable,
+                            SupplierPayment>(
+                        currentTable: table,
+                        referencedTable: $$BusinessesTableReferences
+                            ._supplierPaymentsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .supplierPaymentsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items),
+                  if (customerPaymentsRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable,
+                            CustomerPayment>(
+                        currentTable: table,
+                        referencedTable: $$BusinessesTableReferences
+                            ._customerPaymentsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .customerPaymentsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items),
+                  if (ledgerEntriesRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable,
+                            LedgerEntry>(
+                        currentTable: table,
+                        referencedTable: $$BusinessesTableReferences
+                            ._ledgerEntriesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .ledgerEntriesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items),
+                  if (expenseCategoriesRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable,
+                            ExpenseCategory>(
+                        currentTable: table,
+                        referencedTable: $$BusinessesTableReferences
+                            ._expenseCategoriesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .expenseCategoriesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items),
+                  if (expensesRefs)
+                    await $_getPrefetchedData<Business, $BusinessesTable,
+                            Expense>(
+                        currentTable: table,
+                        referencedTable:
+                            $$BusinessesTableReferences._expensesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BusinessesTableReferences(db, table, p0)
+                                .expensesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.businessId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$BusinessesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $BusinessesTable,
+    Business,
+    $$BusinessesTableFilterComposer,
+    $$BusinessesTableOrderingComposer,
+    $$BusinessesTableAnnotationComposer,
+    $$BusinessesTableCreateCompanionBuilder,
+    $$BusinessesTableUpdateCompanionBuilder,
+    (Business, $$BusinessesTableReferences),
+    Business,
+    PrefetchHooks Function(
+        {bool walletAccountsRefs,
+        bool suppliersRefs,
+        bool customersRefs,
+        bool purchasesRefs,
+        bool salesRefs,
+        bool supplierPaymentsRefs,
+        bool customerPaymentsRefs,
+        bool ledgerEntriesRefs,
+        bool expenseCategoriesRefs,
+        bool expensesRefs})>;
 typedef $$WalletAccountsTableCreateCompanionBuilder = WalletAccountsCompanion
     Function({
   Value<int> id,
+  Value<int> businessId,
   required String name,
   Value<double> openingBalance,
   Value<double> currentBalance,
@@ -5342,6 +7063,7 @@ typedef $$WalletAccountsTableCreateCompanionBuilder = WalletAccountsCompanion
 typedef $$WalletAccountsTableUpdateCompanionBuilder = WalletAccountsCompanion
     Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> name,
   Value<double> openingBalance,
   Value<double> currentBalance,
@@ -5356,6 +7078,21 @@ final class $$WalletAccountsTableReferences
     extends BaseReferences<_$AppDatabase, $WalletAccountsTable, WalletAccount> {
   $$WalletAccountsTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) =>
+      db.businesses.createAlias(
+          $_aliasNameGenerator(db.walletAccounts.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static MultiTypedResultKey<$PurchasesTable, List<Purchase>>
       _purchasesRefsTable(_$AppDatabase db) =>
@@ -5476,6 +7213,26 @@ class $$WalletAccountsTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   Expression<bool> purchasesRefs(
       Expression<bool> Function($$PurchasesTableFilterComposer f) f) {
@@ -5621,6 +7378,26 @@ class $$WalletAccountsTableOrderingComposer
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
 class $$WalletAccountsTableAnnotationComposer
@@ -5658,6 +7435,26 @@ class $$WalletAccountsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   Expression<T> purchasesRefs<T extends Object>(
       Expression<T> Function($$PurchasesTableAnnotationComposer a) f) {
@@ -5777,7 +7574,8 @@ class $$WalletAccountsTableTableManager extends RootTableManager<
     (WalletAccount, $$WalletAccountsTableReferences),
     WalletAccount,
     PrefetchHooks Function(
-        {bool purchasesRefs,
+        {bool businessId,
+        bool purchasesRefs,
         bool supplierPaymentsRefs,
         bool customerPaymentsRefs,
         bool ledgerEntriesRefs,
@@ -5795,6 +7593,7 @@ class $$WalletAccountsTableTableManager extends RootTableManager<
               $$WalletAccountsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<double> openingBalance = const Value.absent(),
             Value<double> currentBalance = const Value.absent(),
@@ -5806,6 +7605,7 @@ class $$WalletAccountsTableTableManager extends RootTableManager<
           }) =>
               WalletAccountsCompanion(
             id: id,
+            businessId: businessId,
             name: name,
             openingBalance: openingBalance,
             currentBalance: currentBalance,
@@ -5817,6 +7617,7 @@ class $$WalletAccountsTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String name,
             Value<double> openingBalance = const Value.absent(),
             Value<double> currentBalance = const Value.absent(),
@@ -5828,6 +7629,7 @@ class $$WalletAccountsTableTableManager extends RootTableManager<
           }) =>
               WalletAccountsCompanion.insert(
             id: id,
+            businessId: businessId,
             name: name,
             openingBalance: openingBalance,
             currentBalance: currentBalance,
@@ -5844,7 +7646,8 @@ class $$WalletAccountsTableTableManager extends RootTableManager<
                   ))
               .toList(),
           prefetchHooksCallback: (
-              {purchasesRefs = false,
+              {businessId = false,
+              purchasesRefs = false,
               supplierPaymentsRefs = false,
               customerPaymentsRefs = false,
               ledgerEntriesRefs = false,
@@ -5858,7 +7661,32 @@ class $$WalletAccountsTableTableManager extends RootTableManager<
                 if (ledgerEntriesRefs) db.ledgerEntries,
                 if (expensesRefs) db.expenses
               ],
-              addJoins: null,
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$WalletAccountsTableReferences._businessIdTable(db),
+                    referencedColumn:
+                        $$WalletAccountsTableReferences._businessIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (purchasesRefs)
@@ -5945,13 +7773,15 @@ typedef $$WalletAccountsTableProcessedTableManager = ProcessedTableManager<
     (WalletAccount, $$WalletAccountsTableReferences),
     WalletAccount,
     PrefetchHooks Function(
-        {bool purchasesRefs,
+        {bool businessId,
+        bool purchasesRefs,
         bool supplierPaymentsRefs,
         bool customerPaymentsRefs,
         bool ledgerEntriesRefs,
         bool expensesRefs})>;
 typedef $$SuppliersTableCreateCompanionBuilder = SuppliersCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   required String name,
   Value<String?> phone,
   Value<String?> email,
@@ -5967,6 +7797,7 @@ typedef $$SuppliersTableCreateCompanionBuilder = SuppliersCompanion Function({
 });
 typedef $$SuppliersTableUpdateCompanionBuilder = SuppliersCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> name,
   Value<String?> phone,
   Value<String?> email,
@@ -5984,6 +7815,21 @@ typedef $$SuppliersTableUpdateCompanionBuilder = SuppliersCompanion Function({
 final class $$SuppliersTableReferences
     extends BaseReferences<_$AppDatabase, $SuppliersTable, Supplier> {
   $$SuppliersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) =>
+      db.businesses.createAlias(
+          $_aliasNameGenerator(db.suppliers.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static MultiTypedResultKey<$PurchasesTable, List<Purchase>>
       _purchasesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -6081,6 +7927,26 @@ class $$SuppliersTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   Expression<bool> purchasesRefs(
       Expression<bool> Function($$PurchasesTableFilterComposer f) f) {
@@ -6196,6 +8062,26 @@ class $$SuppliersTableOrderingComposer
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
 class $$SuppliersTableAnnotationComposer
@@ -6245,6 +8131,26 @@ class $$SuppliersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   Expression<T> purchasesRefs<T extends Object>(
       Expression<T> Function($$PurchasesTableAnnotationComposer a) f) {
@@ -6322,7 +8228,8 @@ class $$SuppliersTableTableManager extends RootTableManager<
     (Supplier, $$SuppliersTableReferences),
     Supplier,
     PrefetchHooks Function(
-        {bool purchasesRefs,
+        {bool businessId,
+        bool purchasesRefs,
         bool supplierPaymentsRefs,
         bool ledgerEntriesRefs})> {
   $$SuppliersTableTableManager(_$AppDatabase db, $SuppliersTable table)
@@ -6337,6 +8244,7 @@ class $$SuppliersTableTableManager extends RootTableManager<
               $$SuppliersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String?> phone = const Value.absent(),
             Value<String?> email = const Value.absent(),
@@ -6352,6 +8260,7 @@ class $$SuppliersTableTableManager extends RootTableManager<
           }) =>
               SuppliersCompanion(
             id: id,
+            businessId: businessId,
             name: name,
             phone: phone,
             email: email,
@@ -6367,6 +8276,7 @@ class $$SuppliersTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String name,
             Value<String?> phone = const Value.absent(),
             Value<String?> email = const Value.absent(),
@@ -6382,6 +8292,7 @@ class $$SuppliersTableTableManager extends RootTableManager<
           }) =>
               SuppliersCompanion.insert(
             id: id,
+            businessId: businessId,
             name: name,
             phone: phone,
             email: email,
@@ -6402,7 +8313,8 @@ class $$SuppliersTableTableManager extends RootTableManager<
                   ))
               .toList(),
           prefetchHooksCallback: (
-              {purchasesRefs = false,
+              {businessId = false,
+              purchasesRefs = false,
               supplierPaymentsRefs = false,
               ledgerEntriesRefs = false}) {
             return PrefetchHooks(
@@ -6412,7 +8324,32 @@ class $$SuppliersTableTableManager extends RootTableManager<
                 if (supplierPaymentsRefs) db.supplierPayments,
                 if (ledgerEntriesRefs) db.ledgerEntries
               ],
-              addJoins: null,
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$SuppliersTableReferences._businessIdTable(db),
+                    referencedColumn:
+                        $$SuppliersTableReferences._businessIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (purchasesRefs)
@@ -6473,11 +8410,13 @@ typedef $$SuppliersTableProcessedTableManager = ProcessedTableManager<
     (Supplier, $$SuppliersTableReferences),
     Supplier,
     PrefetchHooks Function(
-        {bool purchasesRefs,
+        {bool businessId,
+        bool purchasesRefs,
         bool supplierPaymentsRefs,
         bool ledgerEntriesRefs})>;
 typedef $$CustomersTableCreateCompanionBuilder = CustomersCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   required String name,
   Value<String?> phone,
   Value<String?> email,
@@ -6493,6 +8432,7 @@ typedef $$CustomersTableCreateCompanionBuilder = CustomersCompanion Function({
 });
 typedef $$CustomersTableUpdateCompanionBuilder = CustomersCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> name,
   Value<String?> phone,
   Value<String?> email,
@@ -6510,6 +8450,21 @@ typedef $$CustomersTableUpdateCompanionBuilder = CustomersCompanion Function({
 final class $$CustomersTableReferences
     extends BaseReferences<_$AppDatabase, $CustomersTable, Customer> {
   $$CustomersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) =>
+      db.businesses.createAlias(
+          $_aliasNameGenerator(db.customers.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static MultiTypedResultKey<$SalesTable, List<Sale>> _salesRefsTable(
           _$AppDatabase db) =>
@@ -6607,6 +8562,26 @@ class $$CustomersTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   Expression<bool> salesRefs(
       Expression<bool> Function($$SalesTableFilterComposer f) f) {
@@ -6721,6 +8696,26 @@ class $$CustomersTableOrderingComposer
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
 class $$CustomersTableAnnotationComposer
@@ -6770,6 +8765,26 @@ class $$CustomersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   Expression<T> salesRefs<T extends Object>(
       Expression<T> Function($$SalesTableAnnotationComposer a) f) {
@@ -6847,7 +8862,10 @@ class $$CustomersTableTableManager extends RootTableManager<
     (Customer, $$CustomersTableReferences),
     Customer,
     PrefetchHooks Function(
-        {bool salesRefs, bool customerPaymentsRefs, bool ledgerEntriesRefs})> {
+        {bool businessId,
+        bool salesRefs,
+        bool customerPaymentsRefs,
+        bool ledgerEntriesRefs})> {
   $$CustomersTableTableManager(_$AppDatabase db, $CustomersTable table)
       : super(TableManagerState(
           db: db,
@@ -6860,6 +8878,7 @@ class $$CustomersTableTableManager extends RootTableManager<
               $$CustomersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String?> phone = const Value.absent(),
             Value<String?> email = const Value.absent(),
@@ -6875,6 +8894,7 @@ class $$CustomersTableTableManager extends RootTableManager<
           }) =>
               CustomersCompanion(
             id: id,
+            businessId: businessId,
             name: name,
             phone: phone,
             email: email,
@@ -6890,6 +8910,7 @@ class $$CustomersTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String name,
             Value<String?> phone = const Value.absent(),
             Value<String?> email = const Value.absent(),
@@ -6905,6 +8926,7 @@ class $$CustomersTableTableManager extends RootTableManager<
           }) =>
               CustomersCompanion.insert(
             id: id,
+            businessId: businessId,
             name: name,
             phone: phone,
             email: email,
@@ -6925,7 +8947,8 @@ class $$CustomersTableTableManager extends RootTableManager<
                   ))
               .toList(),
           prefetchHooksCallback: (
-              {salesRefs = false,
+              {businessId = false,
+              salesRefs = false,
               customerPaymentsRefs = false,
               ledgerEntriesRefs = false}) {
             return PrefetchHooks(
@@ -6935,7 +8958,32 @@ class $$CustomersTableTableManager extends RootTableManager<
                 if (customerPaymentsRefs) db.customerPayments,
                 if (ledgerEntriesRefs) db.ledgerEntries
               ],
-              addJoins: null,
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$CustomersTableReferences._businessIdTable(db),
+                    referencedColumn:
+                        $$CustomersTableReferences._businessIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (salesRefs)
@@ -6994,9 +9042,13 @@ typedef $$CustomersTableProcessedTableManager = ProcessedTableManager<
     (Customer, $$CustomersTableReferences),
     Customer,
     PrefetchHooks Function(
-        {bool salesRefs, bool customerPaymentsRefs, bool ledgerEntriesRefs})>;
+        {bool businessId,
+        bool salesRefs,
+        bool customerPaymentsRefs,
+        bool ledgerEntriesRefs})>;
 typedef $$PurchasesTableCreateCompanionBuilder = PurchasesCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   required String referenceNumber,
   required int supplierId,
   required int walletAccountId,
@@ -7009,6 +9061,7 @@ typedef $$PurchasesTableCreateCompanionBuilder = PurchasesCompanion Function({
 });
 typedef $$PurchasesTableUpdateCompanionBuilder = PurchasesCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> referenceNumber,
   Value<int> supplierId,
   Value<int> walletAccountId,
@@ -7023,6 +9076,21 @@ typedef $$PurchasesTableUpdateCompanionBuilder = PurchasesCompanion Function({
 final class $$PurchasesTableReferences
     extends BaseReferences<_$AppDatabase, $PurchasesTable, Purchase> {
   $$PurchasesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) =>
+      db.businesses.createAlias(
+          $_aliasNameGenerator(db.purchases.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static $SuppliersTable _supplierIdTable(_$AppDatabase db) =>
       db.suppliers.createAlias(
@@ -7088,6 +9156,26 @@ class $$PurchasesTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   $$SuppliersTableFilterComposer get supplierId {
     final $$SuppliersTableFilterComposer composer = $composerBuilder(
@@ -7165,6 +9253,26 @@ class $$PurchasesTableOrderingComposer
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$SuppliersTableOrderingComposer get supplierId {
     final $$SuppliersTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -7239,6 +9347,26 @@ class $$PurchasesTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$SuppliersTableAnnotationComposer get supplierId {
     final $$SuppliersTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -7291,7 +9419,8 @@ class $$PurchasesTableTableManager extends RootTableManager<
     $$PurchasesTableUpdateCompanionBuilder,
     (Purchase, $$PurchasesTableReferences),
     Purchase,
-    PrefetchHooks Function({bool supplierId, bool walletAccountId})> {
+    PrefetchHooks Function(
+        {bool businessId, bool supplierId, bool walletAccountId})> {
   $$PurchasesTableTableManager(_$AppDatabase db, $PurchasesTable table)
       : super(TableManagerState(
           db: db,
@@ -7304,6 +9433,7 @@ class $$PurchasesTableTableManager extends RootTableManager<
               $$PurchasesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> referenceNumber = const Value.absent(),
             Value<int> supplierId = const Value.absent(),
             Value<int> walletAccountId = const Value.absent(),
@@ -7316,6 +9446,7 @@ class $$PurchasesTableTableManager extends RootTableManager<
           }) =>
               PurchasesCompanion(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             supplierId: supplierId,
             walletAccountId: walletAccountId,
@@ -7328,6 +9459,7 @@ class $$PurchasesTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String referenceNumber,
             required int supplierId,
             required int walletAccountId,
@@ -7340,6 +9472,7 @@ class $$PurchasesTableTableManager extends RootTableManager<
           }) =>
               PurchasesCompanion.insert(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             supplierId: supplierId,
             walletAccountId: walletAccountId,
@@ -7357,7 +9490,9 @@ class $$PurchasesTableTableManager extends RootTableManager<
                   ))
               .toList(),
           prefetchHooksCallback: (
-              {supplierId = false, walletAccountId = false}) {
+              {businessId = false,
+              supplierId = false,
+              walletAccountId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -7374,6 +9509,16 @@ class $$PurchasesTableTableManager extends RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$PurchasesTableReferences._businessIdTable(db),
+                    referencedColumn:
+                        $$PurchasesTableReferences._businessIdTable(db).id,
+                  ) as T;
+                }
                 if (supplierId) {
                   state = state.withJoin(
                     currentTable: table,
@@ -7416,9 +9561,11 @@ typedef $$PurchasesTableProcessedTableManager = ProcessedTableManager<
     $$PurchasesTableUpdateCompanionBuilder,
     (Purchase, $$PurchasesTableReferences),
     Purchase,
-    PrefetchHooks Function({bool supplierId, bool walletAccountId})>;
+    PrefetchHooks Function(
+        {bool businessId, bool supplierId, bool walletAccountId})>;
 typedef $$SalesTableCreateCompanionBuilder = SalesCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   required String referenceNumber,
   required int customerId,
   required double amount,
@@ -7430,6 +9577,7 @@ typedef $$SalesTableCreateCompanionBuilder = SalesCompanion Function({
 });
 typedef $$SalesTableUpdateCompanionBuilder = SalesCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> referenceNumber,
   Value<int> customerId,
   Value<double> amount,
@@ -7443,6 +9591,20 @@ typedef $$SalesTableUpdateCompanionBuilder = SalesCompanion Function({
 final class $$SalesTableReferences
     extends BaseReferences<_$AppDatabase, $SalesTable, Sale> {
   $$SalesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) => db.businesses
+      .createAlias($_aliasNameGenerator(db.sales.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static $CustomersTable _customerIdTable(_$AppDatabase db) => db.customers
       .createAlias($_aliasNameGenerator(db.sales.customerId, db.customers.id));
@@ -7492,6 +9654,26 @@ class $$SalesTableFilterComposer extends Composer<_$AppDatabase, $SalesTable> {
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   $$CustomersTableFilterComposer get customerId {
     final $$CustomersTableFilterComposer composer = $composerBuilder(
@@ -7549,6 +9731,26 @@ class $$SalesTableOrderingComposer
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$CustomersTableOrderingComposer get customerId {
     final $$CustomersTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -7603,6 +9805,26 @@ class $$SalesTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$CustomersTableAnnotationComposer get customerId {
     final $$CustomersTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -7635,7 +9857,7 @@ class $$SalesTableTableManager extends RootTableManager<
     $$SalesTableUpdateCompanionBuilder,
     (Sale, $$SalesTableReferences),
     Sale,
-    PrefetchHooks Function({bool customerId})> {
+    PrefetchHooks Function({bool businessId, bool customerId})> {
   $$SalesTableTableManager(_$AppDatabase db, $SalesTable table)
       : super(TableManagerState(
           db: db,
@@ -7648,6 +9870,7 @@ class $$SalesTableTableManager extends RootTableManager<
               $$SalesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> referenceNumber = const Value.absent(),
             Value<int> customerId = const Value.absent(),
             Value<double> amount = const Value.absent(),
@@ -7659,6 +9882,7 @@ class $$SalesTableTableManager extends RootTableManager<
           }) =>
               SalesCompanion(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             customerId: customerId,
             amount: amount,
@@ -7670,6 +9894,7 @@ class $$SalesTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String referenceNumber,
             required int customerId,
             required double amount,
@@ -7681,6 +9906,7 @@ class $$SalesTableTableManager extends RootTableManager<
           }) =>
               SalesCompanion.insert(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             customerId: customerId,
             amount: amount,
@@ -7694,7 +9920,7 @@ class $$SalesTableTableManager extends RootTableManager<
               .map((e) =>
                   (e.readTable(table), $$SalesTableReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({customerId = false}) {
+          prefetchHooksCallback: ({businessId = false, customerId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -7711,6 +9937,16 @@ class $$SalesTableTableManager extends RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$SalesTableReferences._businessIdTable(db),
+                    referencedColumn:
+                        $$SalesTableReferences._businessIdTable(db).id,
+                  ) as T;
+                }
                 if (customerId) {
                   state = state.withJoin(
                     currentTable: table,
@@ -7743,10 +9979,11 @@ typedef $$SalesTableProcessedTableManager = ProcessedTableManager<
     $$SalesTableUpdateCompanionBuilder,
     (Sale, $$SalesTableReferences),
     Sale,
-    PrefetchHooks Function({bool customerId})>;
+    PrefetchHooks Function({bool businessId, bool customerId})>;
 typedef $$SupplierPaymentsTableCreateCompanionBuilder
     = SupplierPaymentsCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   required String referenceNumber,
   required int supplierId,
   required int walletAccountId,
@@ -7760,6 +9997,7 @@ typedef $$SupplierPaymentsTableCreateCompanionBuilder
 typedef $$SupplierPaymentsTableUpdateCompanionBuilder
     = SupplierPaymentsCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> referenceNumber,
   Value<int> supplierId,
   Value<int> walletAccountId,
@@ -7775,6 +10013,21 @@ final class $$SupplierPaymentsTableReferences extends BaseReferences<
     _$AppDatabase, $SupplierPaymentsTable, SupplierPayment> {
   $$SupplierPaymentsTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) =>
+      db.businesses.createAlias($_aliasNameGenerator(
+          db.supplierPayments.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static $SuppliersTable _supplierIdTable(_$AppDatabase db) =>
       db.suppliers.createAlias($_aliasNameGenerator(
@@ -7842,6 +10095,26 @@ class $$SupplierPaymentsTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   $$SuppliersTableFilterComposer get supplierId {
     final $$SuppliersTableFilterComposer composer = $composerBuilder(
@@ -7920,6 +10193,26 @@ class $$SupplierPaymentsTableOrderingComposer
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$SuppliersTableOrderingComposer get supplierId {
     final $$SuppliersTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -7994,6 +10287,26 @@ class $$SupplierPaymentsTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$SuppliersTableAnnotationComposer get supplierId {
     final $$SuppliersTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -8046,7 +10359,8 @@ class $$SupplierPaymentsTableTableManager extends RootTableManager<
     $$SupplierPaymentsTableUpdateCompanionBuilder,
     (SupplierPayment, $$SupplierPaymentsTableReferences),
     SupplierPayment,
-    PrefetchHooks Function({bool supplierId, bool walletAccountId})> {
+    PrefetchHooks Function(
+        {bool businessId, bool supplierId, bool walletAccountId})> {
   $$SupplierPaymentsTableTableManager(
       _$AppDatabase db, $SupplierPaymentsTable table)
       : super(TableManagerState(
@@ -8060,6 +10374,7 @@ class $$SupplierPaymentsTableTableManager extends RootTableManager<
               $$SupplierPaymentsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> referenceNumber = const Value.absent(),
             Value<int> supplierId = const Value.absent(),
             Value<int> walletAccountId = const Value.absent(),
@@ -8072,6 +10387,7 @@ class $$SupplierPaymentsTableTableManager extends RootTableManager<
           }) =>
               SupplierPaymentsCompanion(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             supplierId: supplierId,
             walletAccountId: walletAccountId,
@@ -8084,6 +10400,7 @@ class $$SupplierPaymentsTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String referenceNumber,
             required int supplierId,
             required int walletAccountId,
@@ -8096,6 +10413,7 @@ class $$SupplierPaymentsTableTableManager extends RootTableManager<
           }) =>
               SupplierPaymentsCompanion.insert(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             supplierId: supplierId,
             walletAccountId: walletAccountId,
@@ -8113,7 +10431,9 @@ class $$SupplierPaymentsTableTableManager extends RootTableManager<
                   ))
               .toList(),
           prefetchHooksCallback: (
-              {supplierId = false, walletAccountId = false}) {
+              {businessId = false,
+              supplierId = false,
+              walletAccountId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -8130,6 +10450,17 @@ class $$SupplierPaymentsTableTableManager extends RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$SupplierPaymentsTableReferences._businessIdTable(db),
+                    referencedColumn: $$SupplierPaymentsTableReferences
+                        ._businessIdTable(db)
+                        .id,
+                  ) as T;
+                }
                 if (supplierId) {
                   state = state.withJoin(
                     currentTable: table,
@@ -8174,10 +10505,12 @@ typedef $$SupplierPaymentsTableProcessedTableManager = ProcessedTableManager<
     $$SupplierPaymentsTableUpdateCompanionBuilder,
     (SupplierPayment, $$SupplierPaymentsTableReferences),
     SupplierPayment,
-    PrefetchHooks Function({bool supplierId, bool walletAccountId})>;
+    PrefetchHooks Function(
+        {bool businessId, bool supplierId, bool walletAccountId})>;
 typedef $$CustomerPaymentsTableCreateCompanionBuilder
     = CustomerPaymentsCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   required String referenceNumber,
   required int customerId,
   required int walletAccountId,
@@ -8191,6 +10524,7 @@ typedef $$CustomerPaymentsTableCreateCompanionBuilder
 typedef $$CustomerPaymentsTableUpdateCompanionBuilder
     = CustomerPaymentsCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> referenceNumber,
   Value<int> customerId,
   Value<int> walletAccountId,
@@ -8206,6 +10540,21 @@ final class $$CustomerPaymentsTableReferences extends BaseReferences<
     _$AppDatabase, $CustomerPaymentsTable, CustomerPayment> {
   $$CustomerPaymentsTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) =>
+      db.businesses.createAlias($_aliasNameGenerator(
+          db.customerPayments.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static $CustomersTable _customerIdTable(_$AppDatabase db) =>
       db.customers.createAlias($_aliasNameGenerator(
@@ -8273,6 +10622,26 @@ class $$CustomerPaymentsTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   $$CustomersTableFilterComposer get customerId {
     final $$CustomersTableFilterComposer composer = $composerBuilder(
@@ -8351,6 +10720,26 @@ class $$CustomerPaymentsTableOrderingComposer
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$CustomersTableOrderingComposer get customerId {
     final $$CustomersTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -8425,6 +10814,26 @@ class $$CustomerPaymentsTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$CustomersTableAnnotationComposer get customerId {
     final $$CustomersTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -8477,7 +10886,8 @@ class $$CustomerPaymentsTableTableManager extends RootTableManager<
     $$CustomerPaymentsTableUpdateCompanionBuilder,
     (CustomerPayment, $$CustomerPaymentsTableReferences),
     CustomerPayment,
-    PrefetchHooks Function({bool customerId, bool walletAccountId})> {
+    PrefetchHooks Function(
+        {bool businessId, bool customerId, bool walletAccountId})> {
   $$CustomerPaymentsTableTableManager(
       _$AppDatabase db, $CustomerPaymentsTable table)
       : super(TableManagerState(
@@ -8491,6 +10901,7 @@ class $$CustomerPaymentsTableTableManager extends RootTableManager<
               $$CustomerPaymentsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> referenceNumber = const Value.absent(),
             Value<int> customerId = const Value.absent(),
             Value<int> walletAccountId = const Value.absent(),
@@ -8503,6 +10914,7 @@ class $$CustomerPaymentsTableTableManager extends RootTableManager<
           }) =>
               CustomerPaymentsCompanion(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             customerId: customerId,
             walletAccountId: walletAccountId,
@@ -8515,6 +10927,7 @@ class $$CustomerPaymentsTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String referenceNumber,
             required int customerId,
             required int walletAccountId,
@@ -8527,6 +10940,7 @@ class $$CustomerPaymentsTableTableManager extends RootTableManager<
           }) =>
               CustomerPaymentsCompanion.insert(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             customerId: customerId,
             walletAccountId: walletAccountId,
@@ -8544,7 +10958,9 @@ class $$CustomerPaymentsTableTableManager extends RootTableManager<
                   ))
               .toList(),
           prefetchHooksCallback: (
-              {customerId = false, walletAccountId = false}) {
+              {businessId = false,
+              customerId = false,
+              walletAccountId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -8561,6 +10977,17 @@ class $$CustomerPaymentsTableTableManager extends RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$CustomerPaymentsTableReferences._businessIdTable(db),
+                    referencedColumn: $$CustomerPaymentsTableReferences
+                        ._businessIdTable(db)
+                        .id,
+                  ) as T;
+                }
                 if (customerId) {
                   state = state.withJoin(
                     currentTable: table,
@@ -8605,10 +11032,12 @@ typedef $$CustomerPaymentsTableProcessedTableManager = ProcessedTableManager<
     $$CustomerPaymentsTableUpdateCompanionBuilder,
     (CustomerPayment, $$CustomerPaymentsTableReferences),
     CustomerPayment,
-    PrefetchHooks Function({bool customerId, bool walletAccountId})>;
+    PrefetchHooks Function(
+        {bool businessId, bool customerId, bool walletAccountId})>;
 typedef $$LedgerEntriesTableCreateCompanionBuilder = LedgerEntriesCompanion
     Function({
   Value<int> id,
+  Value<int> businessId,
   required String referenceNumber,
   required String transactionType,
   Value<int?> walletAccountId,
@@ -8625,6 +11054,7 @@ typedef $$LedgerEntriesTableCreateCompanionBuilder = LedgerEntriesCompanion
 typedef $$LedgerEntriesTableUpdateCompanionBuilder = LedgerEntriesCompanion
     Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> referenceNumber,
   Value<String> transactionType,
   Value<int?> walletAccountId,
@@ -8643,6 +11073,21 @@ final class $$LedgerEntriesTableReferences
     extends BaseReferences<_$AppDatabase, $LedgerEntriesTable, LedgerEntry> {
   $$LedgerEntriesTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) =>
+      db.businesses.createAlias(
+          $_aliasNameGenerator(db.ledgerEntries.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static $WalletAccountsTable _walletAccountIdTable(_$AppDatabase db) =>
       db.walletAccounts.createAlias($_aliasNameGenerator(
@@ -8731,6 +11176,26 @@ class $$LedgerEntriesTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   $$WalletAccountsTableFilterComposer get walletAccountId {
     final $$WalletAccountsTableFilterComposer composer = $composerBuilder(
@@ -8836,6 +11301,26 @@ class $$LedgerEntriesTableOrderingComposer
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$WalletAccountsTableOrderingComposer get walletAccountId {
     final $$WalletAccountsTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -8936,6 +11421,26 @@ class $$LedgerEntriesTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$WalletAccountsTableAnnotationComposer get walletAccountId {
     final $$WalletAccountsTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -9009,7 +11514,10 @@ class $$LedgerEntriesTableTableManager extends RootTableManager<
     (LedgerEntry, $$LedgerEntriesTableReferences),
     LedgerEntry,
     PrefetchHooks Function(
-        {bool walletAccountId, bool supplierId, bool customerId})> {
+        {bool businessId,
+        bool walletAccountId,
+        bool supplierId,
+        bool customerId})> {
   $$LedgerEntriesTableTableManager(_$AppDatabase db, $LedgerEntriesTable table)
       : super(TableManagerState(
           db: db,
@@ -9022,6 +11530,7 @@ class $$LedgerEntriesTableTableManager extends RootTableManager<
               $$LedgerEntriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> referenceNumber = const Value.absent(),
             Value<String> transactionType = const Value.absent(),
             Value<int?> walletAccountId = const Value.absent(),
@@ -9037,6 +11546,7 @@ class $$LedgerEntriesTableTableManager extends RootTableManager<
           }) =>
               LedgerEntriesCompanion(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             transactionType: transactionType,
             walletAccountId: walletAccountId,
@@ -9052,6 +11562,7 @@ class $$LedgerEntriesTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String referenceNumber,
             required String transactionType,
             Value<int?> walletAccountId = const Value.absent(),
@@ -9067,6 +11578,7 @@ class $$LedgerEntriesTableTableManager extends RootTableManager<
           }) =>
               LedgerEntriesCompanion.insert(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             transactionType: transactionType,
             walletAccountId: walletAccountId,
@@ -9087,7 +11599,8 @@ class $$LedgerEntriesTableTableManager extends RootTableManager<
                   ))
               .toList(),
           prefetchHooksCallback: (
-              {walletAccountId = false,
+              {businessId = false,
+              walletAccountId = false,
               supplierId = false,
               customerId = false}) {
             return PrefetchHooks(
@@ -9106,6 +11619,16 @@ class $$LedgerEntriesTableTableManager extends RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$LedgerEntriesTableReferences._businessIdTable(db),
+                    referencedColumn:
+                        $$LedgerEntriesTableReferences._businessIdTable(db).id,
+                  ) as T;
+                }
                 if (walletAccountId) {
                   state = state.withJoin(
                     currentTable: table,
@@ -9160,10 +11683,14 @@ typedef $$LedgerEntriesTableProcessedTableManager = ProcessedTableManager<
     (LedgerEntry, $$LedgerEntriesTableReferences),
     LedgerEntry,
     PrefetchHooks Function(
-        {bool walletAccountId, bool supplierId, bool customerId})>;
+        {bool businessId,
+        bool walletAccountId,
+        bool supplierId,
+        bool customerId})>;
 typedef $$ExpenseCategoriesTableCreateCompanionBuilder
     = ExpenseCategoriesCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   required String name,
   Value<int> iconCodepoint,
   Value<String> colorHex,
@@ -9174,6 +11701,7 @@ typedef $$ExpenseCategoriesTableCreateCompanionBuilder
 typedef $$ExpenseCategoriesTableUpdateCompanionBuilder
     = ExpenseCategoriesCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> name,
   Value<int> iconCodepoint,
   Value<String> colorHex,
@@ -9186,6 +11714,21 @@ final class $$ExpenseCategoriesTableReferences extends BaseReferences<
     _$AppDatabase, $ExpenseCategoriesTable, ExpenseCategory> {
   $$ExpenseCategoriesTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) =>
+      db.businesses.createAlias($_aliasNameGenerator(
+          db.expenseCategories.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
           _$AppDatabase db) =>
@@ -9232,6 +11775,26 @@ class $$ExpenseCategoriesTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   Expression<bool> expensesRefs(
       Expression<bool> Function($$ExpensesTableFilterComposer f) f) {
@@ -9286,6 +11849,26 @@ class $$ExpenseCategoriesTableOrderingComposer
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
 class $$ExpenseCategoriesTableAnnotationComposer
@@ -9317,6 +11900,26 @@ class $$ExpenseCategoriesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   Expression<T> expensesRefs<T extends Object>(
       Expression<T> Function($$ExpensesTableAnnotationComposer a) f) {
@@ -9351,7 +11954,7 @@ class $$ExpenseCategoriesTableTableManager extends RootTableManager<
     $$ExpenseCategoriesTableUpdateCompanionBuilder,
     (ExpenseCategory, $$ExpenseCategoriesTableReferences),
     ExpenseCategory,
-    PrefetchHooks Function({bool expensesRefs})> {
+    PrefetchHooks Function({bool businessId, bool expensesRefs})> {
   $$ExpenseCategoriesTableTableManager(
       _$AppDatabase db, $ExpenseCategoriesTable table)
       : super(TableManagerState(
@@ -9366,6 +11969,7 @@ class $$ExpenseCategoriesTableTableManager extends RootTableManager<
                   $db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<int> iconCodepoint = const Value.absent(),
             Value<String> colorHex = const Value.absent(),
@@ -9375,6 +11979,7 @@ class $$ExpenseCategoriesTableTableManager extends RootTableManager<
           }) =>
               ExpenseCategoriesCompanion(
             id: id,
+            businessId: businessId,
             name: name,
             iconCodepoint: iconCodepoint,
             colorHex: colorHex,
@@ -9384,6 +11989,7 @@ class $$ExpenseCategoriesTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String name,
             Value<int> iconCodepoint = const Value.absent(),
             Value<String> colorHex = const Value.absent(),
@@ -9393,6 +11999,7 @@ class $$ExpenseCategoriesTableTableManager extends RootTableManager<
           }) =>
               ExpenseCategoriesCompanion.insert(
             id: id,
+            businessId: businessId,
             name: name,
             iconCodepoint: iconCodepoint,
             colorHex: colorHex,
@@ -9406,11 +12013,37 @@ class $$ExpenseCategoriesTableTableManager extends RootTableManager<
                     $$ExpenseCategoriesTableReferences(db, table, e)
                   ))
               .toList(),
-          prefetchHooksCallback: ({expensesRefs = false}) {
+          prefetchHooksCallback: ({businessId = false, expensesRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [if (expensesRefs) db.expenses],
-              addJoins: null,
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$ExpenseCategoriesTableReferences._businessIdTable(db),
+                    referencedColumn: $$ExpenseCategoriesTableReferences
+                        ._businessIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (expensesRefs)
@@ -9444,9 +12077,10 @@ typedef $$ExpenseCategoriesTableProcessedTableManager = ProcessedTableManager<
     $$ExpenseCategoriesTableUpdateCompanionBuilder,
     (ExpenseCategory, $$ExpenseCategoriesTableReferences),
     ExpenseCategory,
-    PrefetchHooks Function({bool expensesRefs})>;
+    PrefetchHooks Function({bool businessId, bool expensesRefs})>;
 typedef $$ExpensesTableCreateCompanionBuilder = ExpensesCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   required String referenceNumber,
   required int categoryId,
   Value<int?> walletAccountId,
@@ -9458,6 +12092,7 @@ typedef $$ExpensesTableCreateCompanionBuilder = ExpensesCompanion Function({
 });
 typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
   Value<int> id,
+  Value<int> businessId,
   Value<String> referenceNumber,
   Value<int> categoryId,
   Value<int?> walletAccountId,
@@ -9471,6 +12106,21 @@ typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
 final class $$ExpensesTableReferences
     extends BaseReferences<_$AppDatabase, $ExpensesTable, Expense> {
   $$ExpensesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessesTable _businessIdTable(_$AppDatabase db) =>
+      db.businesses.createAlias(
+          $_aliasNameGenerator(db.expenses.businessId, db.businesses.id));
+
+  $$BusinessesTableProcessedTableManager get businessId {
+    final $_column = $_itemColumn<int>('business_id')!;
+
+    final manager = $$BusinessesTableTableManager($_db, $_db.businesses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_businessIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
 
   static $ExpenseCategoriesTable _categoryIdTable(_$AppDatabase db) =>
       db.expenseCategories.createAlias($_aliasNameGenerator(
@@ -9534,6 +12184,26 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$BusinessesTableFilterComposer get businessId {
+    final $$BusinessesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableFilterComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 
   $$ExpenseCategoriesTableFilterComposer get categoryId {
     final $$ExpenseCategoriesTableFilterComposer composer = $composerBuilder(
@@ -9607,6 +12277,26 @@ class $$ExpensesTableOrderingComposer
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
+  $$BusinessesTableOrderingComposer get businessId {
+    final $$BusinessesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableOrderingComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$ExpenseCategoriesTableOrderingComposer get categoryId {
     final $$ExpenseCategoriesTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -9678,6 +12368,26 @@ class $$ExpensesTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
+  $$BusinessesTableAnnotationComposer get businessId {
+    final $$BusinessesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.businessId,
+        referencedTable: $db.businesses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BusinessesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.businesses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
   $$ExpenseCategoriesTableAnnotationComposer get categoryId {
     final $$ExpenseCategoriesTableAnnotationComposer composer =
         $composerBuilder(
@@ -9731,7 +12441,8 @@ class $$ExpensesTableTableManager extends RootTableManager<
     $$ExpensesTableUpdateCompanionBuilder,
     (Expense, $$ExpensesTableReferences),
     Expense,
-    PrefetchHooks Function({bool categoryId, bool walletAccountId})> {
+    PrefetchHooks Function(
+        {bool businessId, bool categoryId, bool walletAccountId})> {
   $$ExpensesTableTableManager(_$AppDatabase db, $ExpensesTable table)
       : super(TableManagerState(
           db: db,
@@ -9744,6 +12455,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
               $$ExpensesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             Value<String> referenceNumber = const Value.absent(),
             Value<int> categoryId = const Value.absent(),
             Value<int?> walletAccountId = const Value.absent(),
@@ -9755,6 +12467,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
           }) =>
               ExpensesCompanion(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             categoryId: categoryId,
             walletAccountId: walletAccountId,
@@ -9766,6 +12479,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
+            Value<int> businessId = const Value.absent(),
             required String referenceNumber,
             required int categoryId,
             Value<int?> walletAccountId = const Value.absent(),
@@ -9777,6 +12491,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
           }) =>
               ExpensesCompanion.insert(
             id: id,
+            businessId: businessId,
             referenceNumber: referenceNumber,
             categoryId: categoryId,
             walletAccountId: walletAccountId,
@@ -9791,7 +12506,9 @@ class $$ExpensesTableTableManager extends RootTableManager<
                   (e.readTable(table), $$ExpensesTableReferences(db, table, e)))
               .toList(),
           prefetchHooksCallback: (
-              {categoryId = false, walletAccountId = false}) {
+              {businessId = false,
+              categoryId = false,
+              walletAccountId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -9808,6 +12525,16 @@ class $$ExpensesTableTableManager extends RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic>>(state) {
+                if (businessId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.businessId,
+                    referencedTable:
+                        $$ExpensesTableReferences._businessIdTable(db),
+                    referencedColumn:
+                        $$ExpensesTableReferences._businessIdTable(db).id,
+                  ) as T;
+                }
                 if (categoryId) {
                   state = state.withJoin(
                     currentTable: table,
@@ -9850,11 +12577,14 @@ typedef $$ExpensesTableProcessedTableManager = ProcessedTableManager<
     $$ExpensesTableUpdateCompanionBuilder,
     (Expense, $$ExpensesTableReferences),
     Expense,
-    PrefetchHooks Function({bool categoryId, bool walletAccountId})>;
+    PrefetchHooks Function(
+        {bool businessId, bool categoryId, bool walletAccountId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
+  $$BusinessesTableTableManager get businesses =>
+      $$BusinessesTableTableManager(_db, _db.businesses);
   $$WalletAccountsTableTableManager get walletAccounts =>
       $$WalletAccountsTableTableManager(_db, _db.walletAccounts);
   $$SuppliersTableTableManager get suppliers =>

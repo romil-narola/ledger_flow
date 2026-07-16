@@ -881,4 +881,34 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get customerNotFound => 'ગ્રાહક મળ્યો નહીં';
+
+  @override
+  String get appName => 'LedgerFlow';
+
+  @override
+  String get businesses => 'વ્યવસાયો';
+
+  @override
+  String get today => 'આજે';
+
+  @override
+  String get yesterday => 'ગઈકાલે';
+
+  @override
+  String get newBusiness => 'નવો વ્યવસાય';
+
+  @override
+  String get createBusiness => 'વ્યવસાય બનાવો';
+
+  @override
+  String get businessName => 'વ્યવસાયનું નામ';
+
+  @override
+  String get descriptionOptional => 'વર્ણન (વૈકલ્પિક)';
+
+  @override
+  String get requiredField => 'ફરજિયાત છે';
+
+  @override
+  String get noDescription => 'કોઈ વર્ણન નથી';
 }

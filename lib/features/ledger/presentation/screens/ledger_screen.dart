@@ -572,7 +572,7 @@ class _LedgerEntryCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        DateFormatter.getRelativeLabel(entry.date),
+                        DateFormatter.getRelativeLabel(context, entry.date),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
