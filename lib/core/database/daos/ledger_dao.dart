@@ -54,8 +54,8 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
   /// Stream all ledger entries (reactive)
   Stream<List<LedgerEntry>> watchAllEntries({int limit = 50}) {
     return (select(ledgerEntries)
-      ..where((t) => t.businessId.equals(currentBusinessId))
-      ..orderBy([
+          ..where((t) => t.businessId.equals(currentBusinessId))
+          ..orderBy([
             (l) => OrderingTerm.desc(l.date),
             (l) => OrderingTerm.desc(l.id)
           ])
@@ -80,7 +80,9 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
   /// Get entries for a specific supplier
   Future<List<LedgerEntry>> getSupplierLedger(int supplierId) {
     return (select(ledgerEntries)
-          ..where((l) => l.supplierId.equals(supplierId) & l.businessId.equals(currentBusinessId))
+          ..where((l) =>
+              l.supplierId.equals(supplierId) &
+              l.businessId.equals(currentBusinessId))
           ..orderBy([(l) => OrderingTerm.desc(l.date)]))
         .get();
   }
@@ -88,14 +90,18 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
   /// Get entries for a specific customer
   Future<List<LedgerEntry>> getCustomerLedger(int customerId) {
     return (select(ledgerEntries)
-          ..where((l) => l.customerId.equals(customerId) & l.businessId.equals(currentBusinessId))
+          ..where((l) =>
+              l.customerId.equals(customerId) &
+              l.businessId.equals(currentBusinessId))
           ..orderBy([(l) => OrderingTerm.desc(l.date)]))
         .get();
   }
 
   /// Get entry by ID
   Future<LedgerEntry?> getEntryById(int id) {
-    return (select(ledgerEntries)..where((l) => l.id.equals(id) & l.businessId.equals(currentBusinessId)))
+    return (select(ledgerEntries)
+          ..where(
+              (l) => l.id.equals(id) & l.businessId.equals(currentBusinessId)))
         .getSingleOrNull();
   }
 
@@ -103,13 +109,16 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
 
   /// Insert a ledger entry
   Future<int> insertEntry(LedgerEntriesCompanion entry) {
-    return into(ledgerEntries).insert(entry.copyWith(businessId: Value(currentBusinessId)));
+    return into(ledgerEntries)
+        .insert(entry.copyWith(businessId: Value(currentBusinessId)));
   }
 
   /// Get the last wallet balance from ledger for a given wallet
   Future<double> getLastWalletBalance(int walletId) async {
     final query = select(ledgerEntries)
-      ..where((l) => l.walletAccountId.equals(walletId) & l.businessId.equals(currentBusinessId))
+      ..where((l) =>
+          l.walletAccountId.equals(walletId) &
+          l.businessId.equals(currentBusinessId))
       ..orderBy(
           [(l) => OrderingTerm.desc(l.date), (l) => OrderingTerm.desc(l.id)])
       ..limit(1);
@@ -122,7 +131,8 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
     return (select(ledgerEntries)
           ..where((l) =>
               (l.description.like('%$query%') |
-              l.referenceNumber.like('%$query%')) & l.businessId.equals(currentBusinessId))
+                  l.referenceNumber.like('%$query%')) &
+              l.businessId.equals(currentBusinessId))
           ..orderBy([(l) => OrderingTerm.desc(l.date)])
           ..limit(50))
         .get();
@@ -131,14 +141,18 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
   /// Delete entries matching reference number
   Future<int> deleteByReference(String referenceNumber) {
     return (delete(ledgerEntries)
-          ..where((l) => l.referenceNumber.equals(referenceNumber) & l.businessId.equals(currentBusinessId)))
+          ..where((l) =>
+              l.referenceNumber.equals(referenceNumber) &
+              l.businessId.equals(currentBusinessId)))
         .go();
   }
 
   /// Get count of all entries
   Future<int> getEntryCount() async {
     final countExp = ledgerEntries.id.count();
-    final query = selectOnly(ledgerEntries)..addColumns([countExp])..where(ledgerEntries.businessId.equals(currentBusinessId));
+    final query = selectOnly(ledgerEntries)
+      ..addColumns([countExp])
+      ..where(ledgerEntries.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(countExp) ?? 0;
   }

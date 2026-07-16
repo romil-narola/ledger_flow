@@ -240,14 +240,14 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
-          
+
           // Seed default business
           await into(businesses).insert(BusinessesCompanion.insert(
             id: const Value(1),
             name: 'My Business',
             description: const Value('Default business account'),
           ));
-          
+
           // Seed default expense categories for the default business
           await _seedDefaultCategories(1);
         },
@@ -259,7 +259,7 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.createTable(businesses);
-            
+
             // Insert default business
             await into(businesses).insert(BusinessesCompanion.insert(
               id: const Value(1),

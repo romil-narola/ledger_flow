@@ -22,6 +22,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   List<ExpenseCategoryEntity> _categories = [];
   List<WalletAccountEntity> _wallets = [];
   bool _useWallet = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -37,12 +38,16 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
         _categories = categories;
         _wallets = wallets;
         // Default to 'Other' category; fall back to first if not found
-        _selectedCategory = categories.firstWhere(
-          (c) => c.name.toLowerCase() == 'other',
-          orElse: () =>
-              categories.isNotEmpty ? categories.first : categories.first,
-        );
+        if (categories.isNotEmpty) {
+          final others =
+              categories.where((c) => c.name.toLowerCase() == 'other');
+          _selectedCategory =
+              others.isNotEmpty ? others.first : categories.first;
+        } else {
+          _selectedCategory = null;
+        }
         if (wallets.isNotEmpty) _selectedWallet = wallets.first;
+        _isLoading = false;
       });
     }
   }
@@ -135,8 +140,18 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   const SizedBox(height: 16),
 
                   // Category Picker
-                  if (_categories.isEmpty)
+                  if (_isLoading)
                     const Center(child: CircularProgressIndicator())
+                  else if (_categories.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Text(
+                          'No categories found. Please create one.',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ),
+                    )
                   else
                     _buildCategoryGrid(),
                   const SizedBox(height: 16),

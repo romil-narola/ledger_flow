@@ -155,7 +155,8 @@ class _CategoryView extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, ExpenseCategoryEntity cat) async {
+  Future<void> _confirmDelete(
+      BuildContext context, ExpenseCategoryEntity cat) async {
     final confirmed = await DeleteDialog.show(
       context,
       title: context.l10n.deleteCategory,

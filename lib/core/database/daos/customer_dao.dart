@@ -15,24 +15,30 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Customer>> getAllCustomers() {
     return (select(customers)
-          ..where((c) => c.businessId.equals(currentBusinessId) & c.isActive.equals(true))
+          ..where((c) =>
+              c.businessId.equals(currentBusinessId) & c.isActive.equals(true))
           ..orderBy([(c) => OrderingTerm.asc(c.name)]))
         .get();
   }
 
   Stream<List<Customer>> watchAllCustomers() {
     return (select(customers)
-          ..where((c) => c.businessId.equals(currentBusinessId) & c.isActive.equals(true))
+          ..where((c) =>
+              c.businessId.equals(currentBusinessId) & c.isActive.equals(true))
           ..orderBy([(c) => OrderingTerm.asc(c.name)]))
         .watch();
   }
 
   Future<Customer?> getCustomerById(int id) {
-    return (select(customers)..where((c) => c.id.equals(id) & c.businessId.equals(currentBusinessId))).getSingleOrNull();
+    return (select(customers)
+          ..where(
+              (c) => c.id.equals(id) & c.businessId.equals(currentBusinessId)))
+        .getSingleOrNull();
   }
 
   Future<int> insertCustomer(CustomersCompanion customer) {
-    return into(customers).insert(customer.copyWith(businessId: Value(currentBusinessId)));
+    return into(customers)
+        .insert(customer.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<bool> updateCustomer(CustomersCompanion customer) {
@@ -40,7 +46,9 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> softDeleteCustomer(int customerId) {
-    return (update(customers)..where((c) => c.id.equals(customerId) & c.businessId.equals(currentBusinessId)))
+    return (update(customers)
+          ..where((c) =>
+              c.id.equals(customerId) & c.businessId.equals(currentBusinessId)))
         .write(CustomersCompanion(
       isActive: const Value(false),
       updatedAt: Value(DateTime.now()),
@@ -55,7 +63,9 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
     required double outstanding,
     required double advanceBalance,
   }) {
-    return (update(customers)..where((c) => c.id.equals(customerId) & c.businessId.equals(currentBusinessId)))
+    return (update(customers)
+          ..where((c) =>
+              c.id.equals(customerId) & c.businessId.equals(currentBusinessId)))
         .write(CustomersCompanion(
       totalSales: Value(totalSales),
       totalPayments: Value(totalPayments),
@@ -69,7 +79,9 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Sale>> getSalesByCustomer(int customerId) {
     return (select(sales)
-          ..where((s) => s.customerId.equals(customerId) & s.businessId.equals(currentBusinessId))
+          ..where((s) =>
+              s.customerId.equals(customerId) &
+              s.businessId.equals(currentBusinessId))
           ..orderBy([(s) => OrderingTerm.desc(s.date)]))
         .get();
   }
@@ -86,7 +98,8 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> insertSale(SalesCompanion sale) {
-    return into(sales).insert(sale.copyWith(businessId: Value(currentBusinessId)));
+    return into(sales)
+        .insert(sale.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<double> getMonthySales(DateTime month) async {
@@ -105,7 +118,9 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<CustomerPayment>> getPaymentsByCustomer(int customerId) {
     return (select(customerPayments)
-          ..where((p) => p.customerId.equals(customerId) & p.businessId.equals(currentBusinessId))
+          ..where((p) =>
+              p.customerId.equals(customerId) &
+              p.businessId.equals(currentBusinessId))
           ..orderBy([(p) => OrderingTerm.desc(p.date)]))
         .get();
   }
@@ -124,7 +139,8 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> insertCustomerPayment(CustomerPaymentsCompanion payment) {
-    return into(customerPayments).insert(payment.copyWith(businessId: Value(currentBusinessId)));
+    return into(customerPayments)
+        .insert(payment.copyWith(businessId: Value(currentBusinessId)));
   }
 
   // ─── Summary Queries ──────────────────────────────────────────────
@@ -132,7 +148,8 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalOutstanding() async {
     final query = selectOnly(customers)
       ..addColumns([customers.outstanding.sum()])
-      ..where(customers.isActive.equals(true) & customers.businessId.equals(currentBusinessId));
+      ..where(customers.isActive.equals(true) &
+          customers.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(customers.outstanding.sum()) ?? 0.0;
   }
@@ -140,7 +157,8 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalAdvance() async {
     final query = selectOnly(customers)
       ..addColumns([customers.advanceBalance.sum()])
-      ..where(customers.isActive.equals(true) & customers.businessId.equals(currentBusinessId));
+      ..where(customers.isActive.equals(true) &
+          customers.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(customers.advanceBalance.sum()) ?? 0.0;
   }
@@ -148,7 +166,9 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   Future<List<Customer>> getCustomersWithOutstanding() {
     return (select(customers)
           ..where((c) =>
-              c.isActive.equals(true) & c.outstanding.isBiggerThanValue(0) & c.businessId.equals(currentBusinessId))
+              c.isActive.equals(true) &
+              c.outstanding.isBiggerThanValue(0) &
+              c.businessId.equals(currentBusinessId))
           ..orderBy([(c) => OrderingTerm.desc(c.outstanding)]))
         .get();
   }
@@ -156,7 +176,9 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   Future<List<Customer>> getCustomersWithAdvance() {
     return (select(customers)
           ..where((c) =>
-              c.isActive.equals(true) & c.advanceBalance.isBiggerThanValue(0) & c.businessId.equals(currentBusinessId))
+              c.isActive.equals(true) &
+              c.advanceBalance.isBiggerThanValue(0) &
+              c.businessId.equals(currentBusinessId))
           ..orderBy([(c) => OrderingTerm.desc(c.advanceBalance)]))
         .get();
   }

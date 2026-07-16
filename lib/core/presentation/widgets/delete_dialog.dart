@@ -11,7 +11,8 @@ class DeleteDialog extends StatelessWidget {
     required this.content,
   });
 
-  static Future<bool?> show(BuildContext context, {required String title, required String content}) {
+  static Future<bool?> show(BuildContext context,
+      {required String title, required String content}) {
     return showDialog<bool>(
       context: context,
       builder: (context) => DeleteDialog(title: title, content: content),

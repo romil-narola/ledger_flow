@@ -12,7 +12,8 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
   PurchaseDao(super.db);
 
   Future<List<Purchase>> getAllPurchases({DateTime? from, DateTime? to}) {
-    final query = select(purchases)..orderBy([(p) => OrderingTerm.desc(p.date)]);
+    final query = select(purchases)
+      ..orderBy([(p) => OrderingTerm.desc(p.date)]);
     query.where((p) {
       Expression<bool> expr = p.businessId.equals(currentBusinessId);
       if (from != null) expr = expr & p.date.isBiggerOrEqualValue(from);
@@ -23,14 +24,21 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<Purchase?> getPurchaseById(int id) {
-    return (select(purchases)..where((p) => p.id.equals(id) & p.businessId.equals(currentBusinessId))).getSingleOrNull();
+    return (select(purchases)
+          ..where(
+              (p) => p.id.equals(id) & p.businessId.equals(currentBusinessId)))
+        .getSingleOrNull();
   }
 
   Future<int> insertPurchase(PurchasesCompanion purchase) {
-    return into(purchases).insert(purchase.copyWith(businessId: Value(currentBusinessId)));
+    return into(purchases)
+        .insert(purchase.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<void> deletePurchase(int id) {
-    return (delete(purchases)..where((p) => p.id.equals(id) & p.businessId.equals(currentBusinessId))).go();
+    return (delete(purchases)
+          ..where(
+              (p) => p.id.equals(id) & p.businessId.equals(currentBusinessId)))
+        .go();
   }
 }

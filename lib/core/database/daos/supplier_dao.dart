@@ -15,24 +15,30 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Supplier>> getAllSuppliers() {
     return (select(suppliers)
-          ..where((s) => s.businessId.equals(currentBusinessId) & s.isActive.equals(true))
+          ..where((s) =>
+              s.businessId.equals(currentBusinessId) & s.isActive.equals(true))
           ..orderBy([(s) => OrderingTerm.asc(s.name)]))
         .get();
   }
 
   Stream<List<Supplier>> watchAllSuppliers() {
     return (select(suppliers)
-          ..where((s) => s.businessId.equals(currentBusinessId) & s.isActive.equals(true))
+          ..where((s) =>
+              s.businessId.equals(currentBusinessId) & s.isActive.equals(true))
           ..orderBy([(s) => OrderingTerm.asc(s.name)]))
         .watch();
   }
 
   Future<Supplier?> getSupplierById(int id) {
-    return (select(suppliers)..where((s) => s.id.equals(id) & s.businessId.equals(currentBusinessId))).getSingleOrNull();
+    return (select(suppliers)
+          ..where(
+              (s) => s.id.equals(id) & s.businessId.equals(currentBusinessId)))
+        .getSingleOrNull();
   }
 
   Future<int> insertSupplier(SuppliersCompanion supplier) {
-    return into(suppliers).insert(supplier.copyWith(businessId: Value(currentBusinessId)));
+    return into(suppliers)
+        .insert(supplier.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<bool> updateSupplier(SuppliersCompanion supplier) {
@@ -40,7 +46,9 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> softDeleteSupplier(int supplierId) {
-    return (update(suppliers)..where((s) => s.id.equals(supplierId) & s.businessId.equals(currentBusinessId)))
+    return (update(suppliers)
+          ..where((s) =>
+              s.id.equals(supplierId) & s.businessId.equals(currentBusinessId)))
         .write(SuppliersCompanion(
       isActive: const Value(false),
       updatedAt: Value(DateTime.now()),
@@ -55,7 +63,9 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
     required double outstanding,
     required double creditBalance,
   }) {
-    return (update(suppliers)..where((s) => s.id.equals(supplierId) & s.businessId.equals(currentBusinessId)))
+    return (update(suppliers)
+          ..where((s) =>
+              s.id.equals(supplierId) & s.businessId.equals(currentBusinessId)))
         .write(SuppliersCompanion(
       totalPurchases: Value(totalPurchases),
       totalPayments: Value(totalPayments),
@@ -69,7 +79,9 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Purchase>> getPurchasesBySupplier(int supplierId) {
     return (select(purchases)
-          ..where((p) => p.supplierId.equals(supplierId) & p.businessId.equals(currentBusinessId))
+          ..where((p) =>
+              p.supplierId.equals(supplierId) &
+              p.businessId.equals(currentBusinessId))
           ..orderBy([(p) => OrderingTerm.desc(p.date)]))
         .get();
   }
@@ -87,13 +99,15 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> insertPurchase(PurchasesCompanion purchase) {
-    return into(purchases).insert(purchase.copyWith(businessId: Value(currentBusinessId)));
+    return into(purchases)
+        .insert(purchase.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<double> getTotalPurchasesForSupplier(int supplierId) async {
     final query = selectOnly(purchases)
       ..addColumns([purchases.amount.sum()])
-      ..where(purchases.supplierId.equals(supplierId) & purchases.businessId.equals(currentBusinessId));
+      ..where(purchases.supplierId.equals(supplierId) &
+          purchases.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(purchases.amount.sum()) ?? 0.0;
   }
@@ -114,7 +128,9 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<SupplierPayment>> getPaymentsBySupplier(int supplierId) {
     return (select(supplierPayments)
-          ..where((p) => p.supplierId.equals(supplierId) & p.businessId.equals(currentBusinessId))
+          ..where((p) =>
+              p.supplierId.equals(supplierId) &
+              p.businessId.equals(currentBusinessId))
           ..orderBy([(p) => OrderingTerm.desc(p.date)]))
         .get();
   }
@@ -133,13 +149,15 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<int> insertSupplierPayment(SupplierPaymentsCompanion payment) {
-    return into(supplierPayments).insert(payment.copyWith(businessId: Value(currentBusinessId)));
+    return into(supplierPayments)
+        .insert(payment.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<double> getTotalPaymentsForSupplier(int supplierId) async {
     final query = selectOnly(supplierPayments)
       ..addColumns([supplierPayments.amount.sum()])
-      ..where(supplierPayments.supplierId.equals(supplierId) & supplierPayments.businessId.equals(currentBusinessId));
+      ..where(supplierPayments.supplierId.equals(supplierId) &
+          supplierPayments.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(supplierPayments.amount.sum()) ?? 0.0;
   }
@@ -149,7 +167,8 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalOutstanding() async {
     final query = selectOnly(suppliers)
       ..addColumns([suppliers.outstanding.sum()])
-      ..where(suppliers.isActive.equals(true) & suppliers.businessId.equals(currentBusinessId));
+      ..where(suppliers.isActive.equals(true) &
+          suppliers.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(suppliers.outstanding.sum()) ?? 0.0;
   }
@@ -157,7 +176,8 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalCredit() async {
     final query = selectOnly(suppliers)
       ..addColumns([suppliers.creditBalance.sum()])
-      ..where(suppliers.isActive.equals(true) & suppliers.businessId.equals(currentBusinessId));
+      ..where(suppliers.isActive.equals(true) &
+          suppliers.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(suppliers.creditBalance.sum()) ?? 0.0;
   }
@@ -165,7 +185,9 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<List<Supplier>> getSuppliersWithOutstanding() {
     return (select(suppliers)
           ..where((s) =>
-              s.isActive.equals(true) & s.outstanding.isBiggerThanValue(0) & s.businessId.equals(currentBusinessId))
+              s.isActive.equals(true) &
+              s.outstanding.isBiggerThanValue(0) &
+              s.businessId.equals(currentBusinessId))
           ..orderBy([(s) => OrderingTerm.desc(s.outstanding)]))
         .get();
   }
@@ -173,7 +195,9 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<List<Supplier>> getSuppliersWithCredit() {
     return (select(suppliers)
           ..where((s) =>
-              s.isActive.equals(true) & s.creditBalance.isBiggerThanValue(0) & s.businessId.equals(currentBusinessId))
+              s.isActive.equals(true) &
+              s.creditBalance.isBiggerThanValue(0) &
+              s.businessId.equals(currentBusinessId))
           ..orderBy([(s) => OrderingTerm.desc(s.creditBalance)]))
         .get();
   }

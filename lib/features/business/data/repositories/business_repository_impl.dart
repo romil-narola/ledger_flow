@@ -33,7 +33,8 @@ class BusinessRepositoryImpl implements BusinessRepository {
       BusinessesCompanion.insert(
         name: name,
         description: Value(description),
-        currencyCode: currencyCode != null ? Value(currencyCode) : const Value.absent(),
+        currencyCode:
+            currencyCode != null ? Value(currencyCode) : const Value.absent(),
       ),
     );
   }

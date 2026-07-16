@@ -59,7 +59,8 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
       appBar: AppBar(
         title: Text(widget.business == null
             ? context.l10n.newBusiness
-            : context.l10n.businessName), // or context.l10n.editBusiness if available
+            : context.l10n
+                .businessName), // or context.l10n.editBusiness if available
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -74,8 +75,9 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
                   labelText: context.l10n.businessName,
                   border: const OutlineInputBorder(),
                 ),
-                validator: (val) =>
-                    val == null || val.isEmpty ? context.l10n.requiredField : null,
+                validator: (val) => val == null || val.isEmpty
+                    ? context.l10n.requiredField
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(

@@ -23,14 +23,21 @@ class SalesDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<Sale?> getSaleById(int id) {
-    return (select(sales)..where((s) => s.id.equals(id) & s.businessId.equals(currentBusinessId))).getSingleOrNull();
+    return (select(sales)
+          ..where(
+              (s) => s.id.equals(id) & s.businessId.equals(currentBusinessId)))
+        .getSingleOrNull();
   }
 
   Future<int> insertSale(SalesCompanion sale) {
-    return into(sales).insert(sale.copyWith(businessId: Value(currentBusinessId)));
+    return into(sales)
+        .insert(sale.copyWith(businessId: Value(currentBusinessId)));
   }
 
   Future<void> deleteSale(int id) {
-    return (delete(sales)..where((s) => s.id.equals(id) & s.businessId.equals(currentBusinessId))).go();
+    return (delete(sales)
+          ..where(
+              (s) => s.id.equals(id) & s.businessId.equals(currentBusinessId)))
+        .go();
   }
 }
