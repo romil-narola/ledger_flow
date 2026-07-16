@@ -336,28 +336,16 @@ class _ExpenseCard extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: Text(context.l10n.deleteExpense),
-        content:
-            Text('${context.l10n.confirmDelete} ("${expense.description}")'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
-              child: Text(context.l10n.cancel)),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogCtx);
-              onDelete();
-            },
-            child: Text(context.l10n.delete,
-                style: const TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await DeleteDialog.show(
+      context,
+      title: context.l10n.deleteExpense,
+      content: '${context.l10n.confirmDelete} ("${expense.description}")',
     );
+
+    if (confirmed == true) {
+      onDelete();
+    }
   }
 
   Color _hexToColor(String hex) {

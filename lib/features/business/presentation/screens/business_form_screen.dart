@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../bloc/business_cubit.dart';
+import 'package:drift/drift.dart' show Value;
 import '../../../../core/core.dart';
+import '../../../../core/database/app_database.dart';
 
 class BusinessFormScreen extends StatefulWidget {
-  const BusinessFormScreen({super.key});
+  final Business? business;
+
+  const BusinessFormScreen({super.key, this.business});
 
   @override
   State<BusinessFormScreen> createState() => _BusinessFormScreenState();
@@ -13,8 +17,15 @@ class BusinessFormScreen extends StatefulWidget {
 
 class _BusinessFormScreenState extends State<BusinessFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _descController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _descController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.business?.name);
+    _descController = TextEditingController(text: widget.business?.description);
+  }
 
   @override
   void dispose() {
@@ -25,10 +36,19 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
 
   void _save() {
     if (_formKey.currentState!.validate()) {
-      context.read<BusinessCubit>().createBusiness(
-            name: _nameController.text.trim(),
-            description: _descController.text.trim(),
-          );
+      if (widget.business != null) {
+        context.read<BusinessCubit>().updateBusiness(
+              widget.business!.copyWith(
+                name: _nameController.text.trim(),
+                description: Value(_descController.text.trim()),
+              ),
+            );
+      } else {
+        context.read<BusinessCubit>().createBusiness(
+              name: _nameController.text.trim(),
+              description: _descController.text.trim(),
+            );
+      }
       context.pop();
     }
   }
@@ -36,7 +56,11 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.newBusiness)),
+      appBar: AppBar(
+        title: Text(widget.business == null
+            ? context.l10n.newBusiness
+            : context.l10n.businessName), // or context.l10n.editBusiness if available
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -68,7 +92,9 @@ class _BusinessFormScreenState extends State<BusinessFormScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: Text(context.l10n.createBusiness),
+                child: Text(widget.business == null
+                    ? context.l10n.createBusiness
+                    : context.l10n.save),
               ),
             ],
           ),

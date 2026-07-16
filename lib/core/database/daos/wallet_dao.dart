@@ -49,10 +49,13 @@ class WalletDao extends DatabaseAccessor<AppDatabase> with _$WalletDaoMixin, Sco
     DateTime? to,
   }) {
     final query = select(ledgerEntries)
-      ..where((l) => l.walletAccountId.equals(walletId) & l.businessId.equals(currentBusinessId));
-    if (from != null) query.where((l) => l.date.isBiggerOrEqualValue(from));
-    if (to != null) query.where((l) => l.date.isSmallerOrEqualValue(to));
-    query.orderBy([(l) => OrderingTerm.desc(l.date)]);
+      ..orderBy([(l) => OrderingTerm.desc(l.date)]);
+    query.where((l) {
+      Expression<bool> expr = l.walletAccountId.equals(walletId) & l.businessId.equals(currentBusinessId);
+      if (from != null) expr = expr & l.date.isBiggerOrEqualValue(from);
+      if (to != null) expr = expr & l.date.isSmallerOrEqualValue(to);
+      return expr;
+    });
     return query.get();
   }
 

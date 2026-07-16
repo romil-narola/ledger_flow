@@ -155,27 +155,16 @@ class _CategoryView extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, ExpenseCategoryEntity cat) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: Text(context.l10n.deleteCategory),
-        content: Text('${context.l10n.confirmDelete} ("${cat.name}")'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
-              child: Text(context.l10n.cancel)),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogCtx);
-              context.read<ExpenseBloc>().add(DeleteCategoryRequested(cat.id));
-            },
-            child: Text(context.l10n.delete,
-                style: const TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
+  Future<void> _confirmDelete(BuildContext context, ExpenseCategoryEntity cat) async {
+    final confirmed = await DeleteDialog.show(
+      context,
+      title: context.l10n.deleteCategory,
+      content: '${context.l10n.confirmDelete} ("${cat.name}")',
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<ExpenseBloc>().add(DeleteCategoryRequested(cat.id));
+    }
   }
 
   void _showCategoryDialog(BuildContext context,

@@ -3,7 +3,19 @@ import '../app_database.dart';
 
 part 'business_dao.g.dart';
 
-@DriftAccessor(tables: [Businesses])
+@DriftAccessor(tables: [
+  Businesses,
+  WalletAccounts,
+  Suppliers,
+  Customers,
+  Purchases,
+  Sales,
+  SupplierPayments,
+  CustomerPayments,
+  LedgerEntries,
+  ExpenseCategories,
+  Expenses,
+])
 class BusinessDao extends DatabaseAccessor<AppDatabase> with _$BusinessDaoMixin {
   BusinessDao(super.db);
 
@@ -32,8 +44,22 @@ class BusinessDao extends DatabaseAccessor<AppDatabase> with _$BusinessDaoMixin 
     return update(businesses).replace(business);
   }
 
-  /// Delete a business
-  Future<int> deleteBusiness(int id) {
-    return (delete(businesses)..where((t) => t.id.equals(id))).go();
+  /// Delete a business and all its associated data
+  Future<void> deleteBusinessWithData(int businessId) {
+    return transaction(() async {
+      await (delete(ledgerEntries)..where((t) => t.businessId.equals(businessId))).go();
+      await (delete(expenses)..where((t) => t.businessId.equals(businessId))).go();
+      await (delete(expenseCategories)..where((t) => t.businessId.equals(businessId))).go();
+      await (delete(purchases)..where((t) => t.businessId.equals(businessId))).go();
+      await (delete(sales)..where((t) => t.businessId.equals(businessId))).go();
+      await (delete(supplierPayments)..where((t) => t.businessId.equals(businessId))).go();
+      await (delete(customerPayments)..where((t) => t.businessId.equals(businessId))).go();
+      await (delete(walletAccounts)..where((t) => t.businessId.equals(businessId))).go();
+      await (delete(suppliers)..where((t) => t.businessId.equals(businessId))).go();
+      await (delete(customers)..where((t) => t.businessId.equals(businessId))).go();
+      
+      // Finally delete the business
+      await (delete(businesses)..where((t) => t.id.equals(businessId))).go();
+    });
   }
 }

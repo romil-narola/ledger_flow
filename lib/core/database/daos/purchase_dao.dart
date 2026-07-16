@@ -12,11 +12,13 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
   PurchaseDao(super.db);
 
   Future<List<Purchase>> getAllPurchases({DateTime? from, DateTime? to}) {
-    final query = select(purchases)
-      ..where((t) => t.businessId.equals(currentBusinessId))
-      ..orderBy([(p) => OrderingTerm.desc(p.date)]);
-    if (from != null) query.where((p) => p.businessId.equals(currentBusinessId) & p.date.isBiggerOrEqualValue(from));
-    if (to != null) query.where((p) => p.businessId.equals(currentBusinessId) & p.date.isSmallerOrEqualValue(to));
+    final query = select(purchases)..orderBy([(p) => OrderingTerm.desc(p.date)]);
+    query.where((p) {
+      Expression<bool> expr = p.businessId.equals(currentBusinessId);
+      if (from != null) expr = expr & p.date.isBiggerOrEqualValue(from);
+      if (to != null) expr = expr & p.date.isSmallerOrEqualValue(to);
+      return expr;
+    });
     return query.get();
   }
 

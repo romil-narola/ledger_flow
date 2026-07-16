@@ -59,20 +59,29 @@ class BusinessListScreen extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(
                           business.description ?? context.l10n.noDescription),
-                      trailing: isCurrent
-                          ? Chip(
-                              label: Text(context.l10n.active,
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 10)),
-                              backgroundColor: AppColors.primary)
-                          : null,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined,
+                                color: Colors.green),
+                            onPressed: () => context.push('/businesses/edit',
+                                extra: business),
+                          ),
+                          if (businesses.length > 1)
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.red),
+                              onPressed: () =>
+                                  _confirmDelete(context, business),
+                            ),
+                        ],
+                      ),
                       onTap: () {
                         if (!isCurrent) {
                           context
                               .read<BusinessCubit>()
                               .switchBusiness(business.id);
-                          // We might want to clear other BLoC states here or just pop
-                          context.pop();
                         }
                       },
                     ),
@@ -84,5 +93,18 @@ class BusinessListScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, dynamic business) async {
+    final confirmed = await DeleteDialog.show(
+      context,
+      title: 'Delete ${business.name}?',
+      content:
+          'Are you sure you want to delete this business? All wallets, suppliers, customers, and transactions associated with it will be permanently deleted. This action cannot be undone.',
+    );
+
+    if (confirmed == true && context.mounted) {
+      context.read<BusinessCubit>().deleteBusiness(business.id);
+    }
   }
 }

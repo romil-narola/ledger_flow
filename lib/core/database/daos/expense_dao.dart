@@ -41,26 +41,25 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Expense>> getAllExpenses({DateTime? from, DateTime? to}) {
     final query = select(expenses)..orderBy([(e) => OrderingTerm.desc(e.date)]);
-    if (from != null) {
-      query.where((e) => e.businessId.equals(currentBusinessId) & e.date.isBiggerOrEqualValue(from));
-    }
-    if (to != null) {
-      query.where((e) => e.businessId.equals(currentBusinessId) & e.date.isSmallerOrEqualValue(to));
-    }
+    query.where((e) {
+      Expression<bool> expr = e.businessId.equals(currentBusinessId);
+      if (from != null) expr = expr & e.date.isBiggerOrEqualValue(from);
+      if (to != null) expr = expr & e.date.isSmallerOrEqualValue(to);
+      return expr;
+    });
     return query.get();
   }
 
   Future<List<Expense>> getExpensesByCategory(int categoryId,
       {DateTime? from, DateTime? to}) {
     final query = select(expenses)
-      ..where((e) => e.categoryId.equals(categoryId) & e.businessId.equals(currentBusinessId))
       ..orderBy([(e) => OrderingTerm.desc(e.date)]);
-    if (from != null) {
-      query.where((e) => e.businessId.equals(currentBusinessId) & e.date.isBiggerOrEqualValue(from));
-    }
-    if (to != null) {
-      query.where((e) => e.businessId.equals(currentBusinessId) & e.date.isSmallerOrEqualValue(to));
-    }
+    query.where((e) {
+      Expression<bool> expr = e.categoryId.equals(categoryId) & e.businessId.equals(currentBusinessId);
+      if (from != null) expr = expr & e.date.isBiggerOrEqualValue(from);
+      if (to != null) expr = expr & e.date.isSmallerOrEqualValue(to);
+      return expr;
+    });
     return query.get();
   }
 

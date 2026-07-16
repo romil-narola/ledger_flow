@@ -13,8 +13,12 @@ class SalesDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Sale>> getAllSales({DateTime? from, DateTime? to}) {
     final query = select(sales)..orderBy([(s) => OrderingTerm.desc(s.date)]);
-    if (from != null) query.where((s) => s.businessId.equals(currentBusinessId) & s.date.isBiggerOrEqualValue(from));
-    if (to != null) query.where((s) => s.businessId.equals(currentBusinessId) & s.date.isSmallerOrEqualValue(to));
+    query.where((s) {
+      Expression<bool> expr = s.businessId.equals(currentBusinessId);
+      if (from != null) expr = expr & s.date.isBiggerOrEqualValue(from);
+      if (to != null) expr = expr & s.date.isSmallerOrEqualValue(to);
+      return expr;
+    });
     return query.get();
   }
 

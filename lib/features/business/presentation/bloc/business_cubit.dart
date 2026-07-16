@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ledger_flow/core/database/app_database.dart';
 import '../../domain/repositories/business_repository.dart';
 import '../../data/services/current_business_service.dart';
 import 'business_state.dart';
@@ -80,6 +81,32 @@ class BusinessCubit extends Cubit<BusinessState> {
       currencyCode: currencyCode,
     );
     // Stream will automatically emit the new list
+  }
+
+  Future<void> updateBusiness(Business business) async {
+    await _repository.updateBusiness(business);
+    // Stream will automatically emit the new list
+  }
+
+  Future<void> deleteBusiness(int businessId) async {
+    state.maybeWhen(
+      loaded: (businesses, currentBusiness) async {
+        if (businesses.length <= 1) {
+          emit(const BusinessState.error(
+              'Cannot delete the last remaining business.'));
+          return;
+        }
+
+        try {
+          await _repository.deleteBusiness(businessId);
+          // Stream will emit the new list, and _loadBusinesses listener handles switching
+          // if the currently active business was deleted.
+        } catch (e) {
+          emit(BusinessState.error('Failed to delete business: $e'));
+        }
+      },
+      orElse: () {},
+    );
   }
 
   @override

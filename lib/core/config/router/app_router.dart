@@ -24,6 +24,7 @@ import '../../../features/expenses/presentation/screens/expense_category_screen.
 import '../../../features/business/presentation/screens/business_list_screen.dart';
 import '../../../features/business/presentation/screens/business_form_screen.dart';
 import '../../presentation/main_shell.dart';
+import '../../database/app_database.dart';
 
 /// Application routing configuration using GoRouter with shell route for navigation
 final GoRouter appRouter = GoRouter(
@@ -47,6 +48,14 @@ final GoRouter appRouter = GoRouter(
               path: 'new',
               name: 'business-add',
               builder: (context, state) => const BusinessFormScreen(),
+            ),
+            GoRoute(
+              path: 'edit',
+              name: 'business-edit',
+              builder: (context, state) {
+                final business = state.extra as Business;
+                return BusinessFormScreen(business: business);
+              },
             ),
           ],
         ),

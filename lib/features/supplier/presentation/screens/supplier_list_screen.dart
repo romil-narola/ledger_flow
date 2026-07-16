@@ -276,29 +276,16 @@ class _SupplierCard extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.deleteSupplier),
-        content: Text('${context.l10n.confirmDelete} ("${supplier.name}")'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(context.l10n.cancel)),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context
-                  .read<SupplierBloc>()
-                  .add(DeleteSupplierRequested(supplier.id));
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: Text(context.l10n.delete),
-          ),
-        ],
-      ),
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await DeleteDialog.show(
+      context,
+      title: context.l10n.deleteSupplier,
+      content: '${context.l10n.confirmDelete} ("${supplier.name}")',
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<SupplierBloc>().add(DeleteSupplierRequested(supplier.id));
+    }
   }
 }
 

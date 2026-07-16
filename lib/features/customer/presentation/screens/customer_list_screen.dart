@@ -260,29 +260,16 @@ class _CustomerCard extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.deleteCustomer),
-        content: Text('${context.l10n.confirmDelete} ("${customer.name}")'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(context.l10n.cancel)),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context
-                  .read<CustomerBloc>()
-                  .add(DeleteCustomerRequested(customer.id));
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: Text(context.l10n.delete),
-          ),
-        ],
-      ),
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await DeleteDialog.show(
+      context,
+      title: context.l10n.deleteCustomer,
+      content: '${context.l10n.confirmDelete} ("${customer.name}")',
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<CustomerBloc>().add(DeleteCustomerRequested(customer.id));
+    }
   }
 }
 

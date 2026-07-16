@@ -25,21 +25,28 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
     int offset = 0,
   }) {
     final query = select(ledgerEntries)
-      ..where((t) => t.businessId.equals(currentBusinessId))
       ..orderBy(
           [(l) => OrderingTerm.desc(l.date), (l) => OrderingTerm.desc(l.id)])
       ..limit(limit, offset: offset);
 
-    if (from != null) query.where((l) => l.businessId.equals(currentBusinessId) & l.date.isBiggerOrEqualValue(from));
-    if (to != null) query.where((l) => l.businessId.equals(currentBusinessId) & l.date.isSmallerOrEqualValue(to));
-    if (transactionType != null) {
-      query.where((l) => l.transactionType.equals(transactionType));
-    }
-    if (walletId != null) {
-      query.where((l) => l.walletAccountId.equals(walletId) & l.businessId.equals(currentBusinessId));
-    }
-    if (supplierId != null) query.where((l) => l.supplierId.equals(supplierId) & l.businessId.equals(currentBusinessId));
-    if (customerId != null) query.where((l) => l.customerId.equals(customerId) & l.businessId.equals(currentBusinessId));
+    query.where((l) {
+      Expression<bool> expr = l.businessId.equals(currentBusinessId);
+      if (from != null) expr = expr & l.date.isBiggerOrEqualValue(from);
+      if (to != null) expr = expr & l.date.isSmallerOrEqualValue(to);
+      if (transactionType != null) {
+        expr = expr & l.transactionType.equals(transactionType);
+      }
+      if (walletId != null) {
+        expr = expr & l.walletAccountId.equals(walletId);
+      }
+      if (supplierId != null) {
+        expr = expr & l.supplierId.equals(supplierId);
+      }
+      if (customerId != null) {
+        expr = expr & l.customerId.equals(customerId);
+      }
+      return expr;
+    });
 
     return query.get();
   }

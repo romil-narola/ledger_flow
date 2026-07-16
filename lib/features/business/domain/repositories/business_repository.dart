@@ -10,5 +10,5 @@ abstract class BusinessRepository {
     String? currencyCode,
   });
   Future<bool> updateBusiness(Business business);
-  Future<int> deleteBusiness(int id);
+  Future<void> deleteBusiness(int id);
 }

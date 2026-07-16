@@ -296,27 +296,15 @@ class _WalletCard extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.deleteWallet),
-        content: Text('${context.l10n.confirmDelete} ("${wallet.name}")'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(context.l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.read<WalletBloc>().add(DeleteWalletRequested(wallet.id));
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: Text(context.l10n.delete),
-          ),
-        ],
-      ),
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await DeleteDialog.show(
+      context,
+      title: context.l10n.deleteWallet,
+      content: '${context.l10n.confirmDelete} ("${wallet.name}")',
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<WalletBloc>().add(DeleteWalletRequested(wallet.id));
+    }
   }
 }

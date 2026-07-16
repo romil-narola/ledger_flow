@@ -52,7 +52,7 @@ class BusinessRepositoryImpl implements BusinessRepository {
   }
 
   @override
-  Future<int> deleteBusiness(int id) {
-    return _businessDao.deleteBusiness(id);
+  Future<void> deleteBusiness(int id) {
+    return _businessDao.deleteBusinessWithData(id);
   }
 }

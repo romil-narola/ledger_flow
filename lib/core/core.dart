@@ -11,3 +11,4 @@ export 'presentation/widgets/assistive_quick_menu.dart';
 export 'localization/locale_cubit.dart';
 export 'localization/l10n_extension.dart';
 export 'localization/widgets/language_selector_dialog.dart';
+export 'presentation/widgets/delete_dialog.dart';

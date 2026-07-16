@@ -76,8 +76,12 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Sale>> getAllSales({DateTime? from, DateTime? to}) {
     final query = select(sales)..orderBy([(s) => OrderingTerm.desc(s.date)]);
-    if (from != null) query.where((s) => s.businessId.equals(currentBusinessId) & s.date.isBiggerOrEqualValue(from));
-    if (to != null) query.where((s) => s.businessId.equals(currentBusinessId) & s.date.isSmallerOrEqualValue(to));
+    query.where((s) {
+      Expression<bool> expr = s.businessId.equals(currentBusinessId);
+      if (from != null) expr = expr & s.date.isBiggerOrEqualValue(from);
+      if (to != null) expr = expr & s.date.isSmallerOrEqualValue(to);
+      return expr;
+    });
     return query.get();
   }
 
@@ -109,10 +113,13 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   Future<List<CustomerPayment>> getAllCustomerPayments(
       {DateTime? from, DateTime? to}) {
     final query = select(customerPayments)
-      ..where((t) => t.businessId.equals(currentBusinessId))
       ..orderBy([(p) => OrderingTerm.desc(p.date)]);
-    if (from != null) query.where((p) => p.businessId.equals(currentBusinessId) & p.date.isBiggerOrEqualValue(from));
-    if (to != null) query.where((p) => p.businessId.equals(currentBusinessId) & p.date.isSmallerOrEqualValue(to));
+    query.where((p) {
+      Expression<bool> expr = p.businessId.equals(currentBusinessId);
+      if (from != null) expr = expr & p.date.isBiggerOrEqualValue(from);
+      if (to != null) expr = expr & p.date.isSmallerOrEqualValue(to);
+      return expr;
+    });
     return query.get();
   }
 
