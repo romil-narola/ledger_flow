@@ -64,7 +64,8 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
     return (select(ledgerEntries)
           ..where((l) =>
               l.date.isBiggerOrEqualValue(startOfDay) &
-              l.date.isSmallerOrEqualValue(endOfDay))
+              l.date.isSmallerOrEqualValue(endOfDay) &
+              l.businessId.equals(currentBusinessId))
           ..orderBy([(l) => OrderingTerm.desc(l.date)]))
         .get();
   }
@@ -113,8 +114,8 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
   Future<List<LedgerEntry>> searchEntries(String query) {
     return (select(ledgerEntries)
           ..where((l) =>
-              l.description.like('%$query%') |
-              l.referenceNumber.like('%$query%'))
+              (l.description.like('%$query%') |
+              l.referenceNumber.like('%$query%')) & l.businessId.equals(currentBusinessId))
           ..orderBy([(l) => OrderingTerm.desc(l.date)])
           ..limit(50))
         .get();
@@ -123,14 +124,14 @@ class LedgerDao extends DatabaseAccessor<AppDatabase>
   /// Delete entries matching reference number
   Future<int> deleteByReference(String referenceNumber) {
     return (delete(ledgerEntries)
-          ..where((l) => l.referenceNumber.equals(referenceNumber)))
+          ..where((l) => l.referenceNumber.equals(referenceNumber) & l.businessId.equals(currentBusinessId)))
         .go();
   }
 
   /// Get count of all entries
   Future<int> getEntryCount() async {
     final countExp = ledgerEntries.id.count();
-    final query = selectOnly(ledgerEntries)..addColumns([countExp]);
+    final query = selectOnly(ledgerEntries)..addColumns([countExp])..where(ledgerEntries.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(countExp) ?? 0;
   }

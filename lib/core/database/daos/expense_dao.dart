@@ -71,8 +71,7 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase>
     final start = DateTime(month.year, month.month, 1);
     final end = DateTime(month.year, month.month + 1, 1);
     final rows = await (select(expenses)
-          ..where((e) => e.businessId.equals(currentBusinessId) & e.date.isBiggerOrEqualValue(start))
-          ..where((e) => e.businessId.equals(currentBusinessId) & e.date.isSmallerOrEqualValue(end)))
+          ..where((e) => e.businessId.equals(currentBusinessId) & e.date.isBiggerOrEqualValue(start) & e.date.isSmallerOrEqualValue(end)))
         .get();
     return rows.fold<double>(0.0, (sum, e) => sum + e.amount);
   }

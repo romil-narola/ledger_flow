@@ -91,7 +91,8 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
     final query = selectOnly(sales)
       ..addColumns([sales.amount.sum()])
       ..where(sales.date.isBiggerOrEqualValue(start) &
-          sales.date.isSmallerOrEqualValue(end));
+          sales.date.isSmallerOrEqualValue(end) &
+          sales.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(sales.amount.sum()) ?? 0.0;
   }
@@ -124,7 +125,7 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalOutstanding() async {
     final query = selectOnly(customers)
       ..addColumns([customers.outstanding.sum()])
-      ..where(customers.isActive.equals(true));
+      ..where(customers.isActive.equals(true) & customers.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(customers.outstanding.sum()) ?? 0.0;
   }
@@ -132,7 +133,7 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalAdvance() async {
     final query = selectOnly(customers)
       ..addColumns([customers.advanceBalance.sum()])
-      ..where(customers.isActive.equals(true));
+      ..where(customers.isActive.equals(true) & customers.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(customers.advanceBalance.sum()) ?? 0.0;
   }
@@ -140,7 +141,7 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   Future<List<Customer>> getCustomersWithOutstanding() {
     return (select(customers)
           ..where((c) =>
-              c.isActive.equals(true) & c.outstanding.isBiggerThanValue(0))
+              c.isActive.equals(true) & c.outstanding.isBiggerThanValue(0) & c.businessId.equals(currentBusinessId))
           ..orderBy([(c) => OrderingTerm.desc(c.outstanding)]))
         .get();
   }
@@ -148,7 +149,7 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   Future<List<Customer>> getCustomersWithAdvance() {
     return (select(customers)
           ..where((c) =>
-              c.isActive.equals(true) & c.advanceBalance.isBiggerThanValue(0))
+              c.isActive.equals(true) & c.advanceBalance.isBiggerThanValue(0) & c.businessId.equals(currentBusinessId))
           ..orderBy([(c) => OrderingTerm.desc(c.advanceBalance)]))
         .get();
   }

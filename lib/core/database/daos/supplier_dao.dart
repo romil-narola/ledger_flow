@@ -90,7 +90,7 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalPurchasesForSupplier(int supplierId) async {
     final query = selectOnly(purchases)
       ..addColumns([purchases.amount.sum()])
-      ..where(purchases.supplierId.equals(supplierId));
+      ..where(purchases.supplierId.equals(supplierId) & purchases.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(purchases.amount.sum()) ?? 0.0;
   }
@@ -101,7 +101,8 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
     final query = selectOnly(purchases)
       ..addColumns([purchases.amount.sum()])
       ..where(purchases.date.isBiggerOrEqualValue(start) &
-          purchases.date.isSmallerOrEqualValue(end));
+          purchases.date.isSmallerOrEqualValue(end) &
+          purchases.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(purchases.amount.sum()) ?? 0.0;
   }
@@ -132,7 +133,7 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalPaymentsForSupplier(int supplierId) async {
     final query = selectOnly(supplierPayments)
       ..addColumns([supplierPayments.amount.sum()])
-      ..where(supplierPayments.supplierId.equals(supplierId));
+      ..where(supplierPayments.supplierId.equals(supplierId) & supplierPayments.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(supplierPayments.amount.sum()) ?? 0.0;
   }
@@ -142,7 +143,7 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalOutstanding() async {
     final query = selectOnly(suppliers)
       ..addColumns([suppliers.outstanding.sum()])
-      ..where(suppliers.isActive.equals(true));
+      ..where(suppliers.isActive.equals(true) & suppliers.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(suppliers.outstanding.sum()) ?? 0.0;
   }
@@ -150,7 +151,7 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<double> getTotalCredit() async {
     final query = selectOnly(suppliers)
       ..addColumns([suppliers.creditBalance.sum()])
-      ..where(suppliers.isActive.equals(true));
+      ..where(suppliers.isActive.equals(true) & suppliers.businessId.equals(currentBusinessId));
     final result = await query.getSingle();
     return result.read(suppliers.creditBalance.sum()) ?? 0.0;
   }
@@ -158,7 +159,7 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<List<Supplier>> getSuppliersWithOutstanding() {
     return (select(suppliers)
           ..where((s) =>
-              s.isActive.equals(true) & s.outstanding.isBiggerThanValue(0))
+              s.isActive.equals(true) & s.outstanding.isBiggerThanValue(0) & s.businessId.equals(currentBusinessId))
           ..orderBy([(s) => OrderingTerm.desc(s.outstanding)]))
         .get();
   }
@@ -166,7 +167,7 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   Future<List<Supplier>> getSuppliersWithCredit() {
     return (select(suppliers)
           ..where((s) =>
-              s.isActive.equals(true) & s.creditBalance.isBiggerThanValue(0))
+              s.isActive.equals(true) & s.creditBalance.isBiggerThanValue(0) & s.businessId.equals(currentBusinessId))
           ..orderBy([(s) => OrderingTerm.desc(s.creditBalance)]))
         .get();
   }
