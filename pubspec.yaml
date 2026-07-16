@@ -1,0 +1,101 @@
+name: ledger_flow
+description: "LedgerFlow - Professional Business Accounting, Supplier & Customer Ledger Management with Wallet Accounts"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI & Icons
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+
+  # State Management
+  flutter_bloc: ^8.1.6
+  bloc: ^8.1.4
+  equatable: ^2.0.5
+
+  # Database - Drift SQLite
+  drift: ^2.20.3
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+  # Dependency Injection
+  get_it: ^8.0.3
+
+  # Navigation
+  go_router: ^14.3.0
+
+  # Code Generation
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Utilities
+  intl: ^0.20.2
+  uuid: ^4.5.0
+  collection: ^1.18.0
+
+  # Charts
+  fl_chart: ^0.69.0
+
+  # Export
+  pdf: ^3.11.1
+  printing: ^5.13.2
+  excel: ^4.0.6
+  share_plus: ^10.1.2
+
+  # File Handling
+  permission_handler: ^11.3.1
+  open_filex: ^4.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Code Generation
+  build_runner: ^2.4.12
+  drift_dev: ^2.20.3
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+
+  # App Icons Generator
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21
+
+  web:
+    generate: true
+    image_path: "assets/images/logo.png"
+    background_color: "#0f172a"
+    theme_color: "#0284c7"
+  windows:
+    generate: true
+    image_path: "assets/images/logo.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/images/logo.png"
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/images/
+
+
