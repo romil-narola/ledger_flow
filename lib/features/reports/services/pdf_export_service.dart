@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -12,13 +13,25 @@ import '../../../l10n/app_localizations.dart';
 
 class PdfExportService {
   /// Load Noto Sans font which supports the ₹ Rupee glyph (U+20B9).
-  /// The default Helvetica/Times in the pdf package does NOT include ₹.
+  /// Loads from local assets first to guarantee offline and release mode support.
+  /// Falls back to PdfGoogleFonts if asset loading fails.
   static Future<pw.Font> _loadFont() async {
-    return PdfGoogleFonts.notoSansRegular();
+    try {
+      final fontData =
+          await rootBundle.load('assets/fonts/NotoSans-Regular.ttf');
+      return pw.Font.ttf(fontData);
+    } catch (_) {
+      return PdfGoogleFonts.notoSansRegular();
+    }
   }
 
   static Future<pw.Font> _loadFontBold() async {
-    return PdfGoogleFonts.notoSansBold();
+    try {
+      final fontData = await rootBundle.load('assets/fonts/NotoSans-Bold.ttf');
+      return pw.Font.ttf(fontData);
+    } catch (_) {
+      return PdfGoogleFonts.notoSansBold();
+    }
   }
 
   /// Build a [pw.ThemeData] that uses Noto Sans for all text,
