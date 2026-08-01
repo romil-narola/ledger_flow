@@ -536,13 +536,39 @@ class _ReportsScreenState extends State<ReportsScreen> {
             to: DateTime.now(),
           );
           final personalCategories = [
-            'food & dining',
+            'food',
+            'dining',
             'entertainment',
             'medical',
+            'doctor',
+            'hospital',
+            'medicine',
             'education',
+            'school',
+            'college',
+            'tuition',
+            'fee',
             'personal',
             'family',
-            'shopping'
+            'shopping',
+            'clothing',
+            'grocery',
+            'groceries',
+            'home',
+            'house',
+            'movie',
+            'gift',
+            'recharge',
+            'subscription',
+            'life',
+            'health',
+            'self',
+            'draw',
+            'drawing',
+            'household',
+            'charity',
+            'vacation',
+            'trip'
           ];
           double personalExpVal = 0.0;
           double businessExpVal = 0.0;
@@ -602,13 +628,39 @@ class _ReportsScreenState extends State<ReportsScreen> {
           final double totalSales = sales.fold(0.0, (sum, s) => sum + s.amount);
 
           final personalCategories = [
-            'food & dining',
+            'food',
+            'dining',
             'entertainment',
             'medical',
+            'doctor',
+            'hospital',
+            'medicine',
             'education',
+            'school',
+            'college',
+            'tuition',
+            'fee',
             'personal',
             'family',
-            'shopping'
+            'shopping',
+            'clothing',
+            'grocery',
+            'groceries',
+            'home',
+            'house',
+            'movie',
+            'gift',
+            'recharge',
+            'subscription',
+            'life',
+            'health',
+            'self',
+            'draw',
+            'drawing',
+            'household',
+            'charity',
+            'vacation',
+            'trip'
           ];
           double personalExp = 0.0;
           double businessExp = 0.0;
@@ -920,9 +972,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   children: [
                     Expanded(
                       child: ChoiceChip(
+                        showCheckmark: false,
                         label: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            if (_selectedFormat == ExportFormat.pdf) ...[
+                              const Icon(Icons.check_circle,
+                                  size: 16, color: Colors.white),
+                              const SizedBox(width: 6),
+                            ],
                             Icon(
                               Icons.picture_as_pdf,
                               size: 16,
@@ -963,9 +1021,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ChoiceChip(
+                        showCheckmark: false,
                         label: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            if (_selectedFormat == ExportFormat.excel) ...[
+                              const Icon(Icons.check_circle,
+                                  size: 16, color: Colors.white),
+                              const SizedBox(width: 6),
+                            ],
                             Icon(
                               Icons.grid_on,
                               size: 16,

@@ -915,13 +915,13 @@ class ExcelExportService {
     }
 
     final personalCategories = [
-      'food & dining',
-      'entertainment',
-      'medical',
-      'education',
-      'personal',
-      'family',
-      'shopping'
+      'food', 'dining', 'entertainment', 'medical', 'doctor',
+      'hospital', 'medicine', 'education', 'school', 'college',
+      'tuition', 'fee', 'personal', 'family', 'shopping',
+      'clothing', 'grocery', 'groceries', 'home', 'house',
+      'movie', 'gift', 'recharge', 'subscription', 'life',
+      'health', 'self', 'draw', 'drawing', 'household',
+      'charity', 'vacation', 'trip'
     ];
     double personalTotal = 0.0;
     double businessTotal = 0.0;

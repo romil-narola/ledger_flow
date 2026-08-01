@@ -26,6 +26,7 @@ class _ExpenseListView extends StatefulWidget {
 class _ExpenseListViewState extends State<_ExpenseListView> {
   DateTime? _from;
   DateTime? _to;
+  int _selectedNatureIndex = 0; // 0: All, 1: Business, 2: Personal
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +143,55 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
   }
 
   Widget _buildExpenseList(
-      BuildContext context, List<ExpenseEntity> expenses, bool isDark) {
+      BuildContext context, List<ExpenseEntity> rawExpenses, bool isDark) {
+    final personalKeywords = [
+      'food',
+      'dining',
+      'entertainment',
+      'medical',
+      'doctor',
+      'hospital',
+      'medicine',
+      'education',
+      'school',
+      'college',
+      'tuition',
+      'fee',
+      'personal',
+      'family',
+      'shopping',
+      'clothing',
+      'grocery',
+      'groceries',
+      'home',
+      'house',
+      'movie',
+      'gift',
+      'recharge',
+      'subscription',
+      'life',
+      'health',
+      'self',
+      'draw',
+      'drawing',
+      'household',
+      'charity',
+      'vacation',
+      'trip'
+    ];
+
+    // Filter expenses based on selected nature segment
+    final expenses = rawExpenses.where((e) {
+      final isPersonal =
+          personalKeywords.any((p) => e.categoryName.toLowerCase().contains(p));
+      if (_selectedNatureIndex == 1) {
+        return !isPersonal; // Business Only
+      } else if (_selectedNatureIndex == 2) {
+        return isPersonal; // Personal Only
+      }
+      return true; // All
+    }).toList();
+
     // Group expenses by date
     final Map<String, List<ExpenseEntity>> grouped = {};
     for (final e in expenses) {
@@ -162,82 +211,246 @@ class _ExpenseListViewState extends State<_ExpenseListView> {
         // Monthly total banner
         Container(
           width: double.infinity,
-          margin: const EdgeInsets.all(16),
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+            gradient: LinearGradient(
+              colors: _selectedNatureIndex == 1
+                  ? [const Color(0xFF0284C7), const Color(0xFF0369A1)]
+                  : _selectedNatureIndex == 2
+                      ? [const Color(0xFF8B5CF6), const Color(0xFF6D28D9)]
+                      : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
             ),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             children: [
-              const Icon(Icons.calendar_month, color: Colors.white, size: 28),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(context.l10n.thisMonth,
-                      style:
-                          const TextStyle(color: Colors.white70, fontSize: 13)),
-                  Text(
-                    CurrencyFormatter.format(monthTotal),
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ],
+              Icon(
+                _selectedNatureIndex == 1
+                    ? Icons.business_center_outlined
+                    : _selectedNatureIndex == 2
+                        ? Icons.person_outline
+                        : Icons.calendar_month,
+                color: Colors.white,
+                size: 28,
               ),
-              const Spacer(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedNatureIndex == 1
+                          ? 'Business Expenses'
+                          : _selectedNatureIndex == 2
+                              ? 'Personal Expenses'
+                              : context.l10n.thisMonth,
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        CurrencyFormatter.format(monthTotal),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
               Text(
-                '${thisMonth.length} expenses',
+                '${thisMonth.length} items',
                 style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
             ],
           ),
         ),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+
+        // Filter Segment Control Bar
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Row(
             children: [
-              for (final entry in grouped.entries) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
+              Expanded(
+                child: ChoiceChip(
+                  showCheckmark: false,
+                  label: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(entry.key,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                            color: isDark ? Colors.white60 : Colors.black54,
-                          )),
-                      const SizedBox(width: 8),
-                      Expanded(
-                          child: Divider(
-                              color: isDark ? Colors.white12 : Colors.black12)),
-                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.grid_view,
+                        size: 16,
+                        color: _selectedNatureIndex == 0
+                            ? Colors.white
+                            : AppColors.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text('All (${rawExpenses.length})'),
+                    ],
+                  ),
+                  selected: _selectedNatureIndex == 0,
+                  selectedColor: AppColors.primary,
+                  backgroundColor:
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                  labelStyle: TextStyle(
+                    color: _selectedNatureIndex == 0
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.onSurface,
+                    fontSize: 12,
+                    fontWeight: _selectedNatureIndex == 0
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                  onSelected: (_) => setState(() => _selectedNatureIndex = 0),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ChoiceChip(
+                  showCheckmark: false,
+                  label: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.business_center_outlined,
+                        size: 16,
+                        color: _selectedNatureIndex == 1
+                            ? Colors.white
+                            : const Color(0xFF0284C7),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text('Business'),
+                    ],
+                  ),
+                  selected: _selectedNatureIndex == 1,
+                  selectedColor: const Color(0xFF0284C7),
+                  backgroundColor:
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                  labelStyle: TextStyle(
+                    color: _selectedNatureIndex == 1
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.onSurface,
+                    fontSize: 12,
+                    fontWeight: _selectedNatureIndex == 1
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                  onSelected: (_) => setState(() => _selectedNatureIndex = 1),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ChoiceChip(
+                  showCheckmark: false,
+                  label: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.person_outline,
+                        size: 16,
+                        color: _selectedNatureIndex == 2
+                            ? Colors.white
+                            : const Color(0xFF8B5CF6),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text('Personal'),
+                    ],
+                  ),
+                  selected: _selectedNatureIndex == 2,
+                  selectedColor: const Color(0xFF8B5CF6),
+                  backgroundColor:
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                  labelStyle: TextStyle(
+                    color: _selectedNatureIndex == 2
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.onSurface,
+                    fontSize: 12,
+                    fontWeight: _selectedNatureIndex == 2
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                  onSelected: (_) => setState(() => _selectedNatureIndex = 2),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Expanded(
+          child: expenses.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _selectedNatureIndex == 1
+                            ? Icons.business_center_outlined
+                            : Icons.person_outline,
+                        size: 48,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(height: 12),
                       Text(
-                        CurrencyFormatter.format(
-                            entry.value.fold(0.0, (s, e) => s + e.amount)),
-                        style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.error,
-                            fontWeight: FontWeight.w600),
+                        _selectedNatureIndex == 1
+                            ? 'No business expenses found'
+                            : 'No personal expenses found',
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                     ],
                   ),
+                )
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                  children: [
+                    for (final entry in grouped.entries) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            Text(entry.key,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  color:
+                                      isDark ? Colors.white60 : Colors.black54,
+                                )),
+                            const SizedBox(width: 8),
+                            Expanded(
+                                child: Divider(
+                                    color: isDark
+                                        ? Colors.white12
+                                        : Colors.black12)),
+                            const SizedBox(width: 8),
+                            Text(
+                              CurrencyFormatter.format(entry.value
+                                  .fold(0.0, (s, e) => s + e.amount)),
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.error,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ...entry.value.map((expense) => _ExpenseCard(
+                          expense: expense,
+                          onDelete: () {
+                            context
+                                .read<ExpenseBloc>()
+                                .add(DeleteExpenseRequested(expense.id));
+                          })),
+                    ],
+                  ],
                 ),
-                ...entry.value.map((expense) => _ExpenseCard(
-                    expense: expense,
-                    onDelete: () {
-                      context
-                          .read<ExpenseBloc>()
-                          .add(DeleteExpenseRequested(expense.id));
-                    })),
-              ],
-            ],
-          ),
         ),
       ],
     );
@@ -285,13 +498,20 @@ class _ExpenseCard extends StatelessWidget {
             size: 22,
           ),
         ),
-        title: Text(expense.description,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+        title: Text(
+          expense.description,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Row(
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Container(
                   padding:
@@ -306,25 +526,51 @@ class _ExpenseCard extends StatelessWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.w500)),
                 ),
-                const SizedBox(width: 6),
                 Builder(builder: (context) {
-                  final personalCategories = [
-                    'food & dining',
+                  final personalKeywords = [
+                    'food',
+                    'dining',
                     'entertainment',
                     'medical',
+                    'doctor',
+                    'hospital',
+                    'medicine',
                     'education',
+                    'school',
+                    'college',
+                    'tuition',
+                    'fee',
                     'personal',
                     'family',
-                    'shopping'
+                    'shopping',
+                    'clothing',
+                    'grocery',
+                    'groceries',
+                    'home',
+                    'house',
+                    'movie',
+                    'gift',
+                    'recharge',
+                    'subscription',
+                    'life',
+                    'health',
+                    'self',
+                    'draw',
+                    'drawing',
+                    'household',
+                    'charity',
+                    'vacation',
+                    'trip'
                   ];
-                  final isPersonal = personalCategories.any(
+                  final isPersonal = personalKeywords.any(
                       (p) => expense.categoryName.toLowerCase().contains(p));
-                  final badgeColor =
-                      isPersonal ? const Color(0xFF8B5CF6) : const Color(0xFF0284C7);
+                  final badgeColor = isPersonal
+                      ? const Color(0xFF8B5CF6)
+                      : const Color(0xFF0284C7);
 
                   return Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: badgeColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(4),
@@ -352,13 +598,19 @@ class _ExpenseCard extends StatelessWidget {
                   );
                 }),
                 if (expense.walletName != null) ...[
-                  const SizedBox(width: 6),
-                  const Icon(Icons.account_balance_wallet_outlined,
-                      size: 12, color: AppColors.textSecondaryLight),
-                  const SizedBox(width: 2),
-                  Text(expense.walletName!,
-                      style: const TextStyle(
-                          fontSize: 11, color: AppColors.textSecondaryLight)),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.account_balance_wallet_outlined,
+                          size: 12, color: AppColors.textSecondaryLight),
+                      const SizedBox(width: 2),
+                      Text(
+                        expense.walletName!,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textSecondaryLight),
+                      ),
+                    ],
+                  ),
                 ],
               ],
             ),
@@ -367,12 +619,15 @@ class _ExpenseCard extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              CurrencyFormatter.format(expense.amount),
-              style: const TextStyle(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                CurrencyFormatter.format(expense.amount),
+                style: const TextStyle(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15),
+              ),
             ),
             const SizedBox(width: 4),
             IconButton(

@@ -123,8 +123,45 @@ class _CategoryView extends StatelessWidget {
                         size: 22,
                       ),
                     ),
-                    title: Text(cat.name,
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    title: Row(
+                      children: [
+                        Text(cat.name,
+                            style: const TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(width: 8),
+                        Builder(builder: (_) {
+                          final personalKeywords = [
+                            'food', 'dining', 'entertainment', 'medical', 'doctor',
+                            'hospital', 'medicine', 'education', 'school', 'college',
+                            'tuition', 'fee', 'personal', 'family', 'shopping',
+                            'clothing', 'grocery', 'groceries', 'home', 'house',
+                            'movie', 'gift', 'recharge', 'subscription', 'life',
+                            'health', 'self', 'draw', 'drawing', 'household',
+                            'charity', 'vacation', 'trip'
+                          ];
+                          final isPersonal = personalKeywords.any(
+                              (p) => cat.name.toLowerCase().contains(p));
+                          final badgeColor = isPersonal
+                              ? const Color(0xFF8B5CF6)
+                              : const Color(0xFF0284C7);
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: badgeColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              isPersonal ? 'Personal' : 'Business',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: badgeColor,
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
                     subtitle: cat.monthlyBudget != null
                         ? Text(
                             '${context.l10n.monthlyBudget}: ${CurrencyFormatter.format(cat.monthlyBudget!)}',
@@ -176,114 +213,318 @@ class _CategoryView extends StatelessWidget {
     String selectedColor =
         existing?.colorHex ?? (_availableColors.first['hex'] as String);
 
+    final personalKeywords = [
+      'food', 'dining', 'entertainment', 'medical', 'doctor',
+      'hospital', 'medicine', 'education', 'school', 'college',
+      'tuition', 'fee', 'personal', 'family', 'shopping',
+      'clothing', 'grocery', 'groceries', 'home', 'house',
+      'movie', 'gift', 'recharge', 'subscription', 'life',
+      'health', 'self', 'draw', 'drawing', 'household',
+      'charity', 'vacation', 'trip'
+    ];
+    bool isPersonalType = existing != null &&
+        personalKeywords.any((p) => existing.name.toLowerCase().contains(p));
+
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (_, setDialogState) => AlertDialog(
-          title: Text(existing != null ? 'Edit Category' : 'New Category'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration:
-                      InputDecoration(labelText: context.l10n.categoryName),
-                ),
-                const SizedBox(height: 16),
-                Text(context.l10n.icon,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _availableIcons.map((ic) {
-                    final cp = ic['codepoint'] as int;
-                    final isSelected = selectedIcon == cp;
-                    return GestureDetector(
-                      onTap: () => setDialogState(() => selectedIcon = cp),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
+        builder: (_, setDialogState) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? _hexToColor(selectedColor)
-                              : _hexToColor(selectedColor)
-                                  .withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
+                          color: _hexToColor(selectedColor).withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          IconData(cp, fontFamily: 'MaterialIcons'),
-                          color: isSelected
-                              ? Colors.white
-                              : _hexToColor(selectedColor),
-                          size: 20,
+                          IconData(selectedIcon, fontFamily: 'MaterialIcons'),
+                          color: _hexToColor(selectedColor),
+                          size: 24,
                         ),
                       ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-                Text(context.l10n.color,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _availableColors.map((col) {
-                    final hex = col['hex'] as String;
-                    final isSelected = selectedColor == hex;
-                    return GestureDetector(
-                      onTap: () => setDialogState(() => selectedColor = hex),
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: _hexToColor(hex),
-                          shape: BoxShape.circle,
-                          border: isSelected
-                              ? Border.all(color: Colors.black, width: 2.5)
+                      const SizedBox(width: 12),
+                      Text(
+                        existing != null ? 'Edit Category' : 'New Category',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Category Type Toggle (Business vs Personal)
+                  Text('Category Type *',
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                isPersonalType = false;
+                                selectedColor = '#0284C7';
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: !isPersonalType
+                                    ? const Color(0xFF0284C7)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.business_center_outlined,
+                                    size: 14,
+                                    color: !isPersonalType
+                                        ? Colors.white
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Business',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: !isPersonalType
+                                          ? Colors.white
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                      fontWeight: !isPersonalType
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                isPersonalType = true;
+                                selectedColor = '#8B5CF6';
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isPersonalType
+                                    ? const Color(0xFF8B5CF6)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.person_outline,
+                                    size: 14,
+                                    color: isPersonalType
+                                        ? Colors.white
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Personal',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isPersonalType
+                                          ? Colors.white
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                      fontWeight: isPersonalType
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.categoryName,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(context.l10n.icon,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _availableIcons.map((ic) {
+                      final cp = ic['codepoint'] as int;
+                      final isSelected = selectedIcon == cp;
+                      return GestureDetector(
+                        onTap: () => setDialogState(() => selectedIcon = cp),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? _hexToColor(selectedColor)
+                                : _hexToColor(selectedColor)
+                                    .withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            IconData(cp, fontFamily: 'MaterialIcons'),
+                            color: isSelected
+                                ? Colors.white
+                                : _hexToColor(selectedColor),
+                            size: 20,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(context.l10n.color,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _availableColors.map((col) {
+                      final hex = col['hex'] as String;
+                      final isSelected = selectedColor == hex;
+                      return GestureDetector(
+                        onTap: () => setDialogState(() => selectedColor = hex),
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: _hexToColor(hex),
+                            shape: BoxShape.circle,
+                            border: isSelected
+                                ? Border.all(color: Colors.black, width: 2.5)
+                                : null,
+                          ),
+                          child: isSelected
+                              ? const Icon(Icons.check,
+                                  color: Colors.white, size: 16)
                               : null,
                         ),
-                        child: isSelected
-                            ? const Icon(Icons.check,
-                                color: Colors.white, size: 16)
-                            : null,
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: BorderSide(
+                                color: Colors.grey.shade300, width: 1.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            context.l10n.cancel,
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
-                    );
-                  }).toList(),
-                ),
-              ],
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (nameController.text.trim().isEmpty) return;
+                            Navigator.pop(dialogContext);
+                            if (existing != null) {
+                              context
+                                  .read<ExpenseBloc>()
+                                  .add(UpdateCategoryRequested(
+                                    existing.copyWith(
+                                      name: nameController.text.trim(),
+                                      iconCodepoint: selectedIcon,
+                                      colorHex: selectedColor,
+                                    ),
+                                  ));
+                            } else {
+                              context
+                                  .read<ExpenseBloc>()
+                                  .add(AddCategoryRequested(
+                                    name: nameController.text.trim(),
+                                    iconCodepoint: selectedIcon,
+                                    colorHex: selectedColor,
+                                  ));
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            existing != null
+                                ? context.l10n.update
+                                : context.l10n.add,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.cancel)),
-            ElevatedButton(
-              onPressed: () {
-                if (nameController.text.trim().isEmpty) return;
-                Navigator.pop(dialogContext);
-                if (existing != null) {
-                  context.read<ExpenseBloc>().add(UpdateCategoryRequested(
-                        existing.copyWith(
-                          name: nameController.text.trim(),
-                          iconCodepoint: selectedIcon,
-                          colorHex: selectedColor,
-                        ),
-                      ));
-                } else {
-                  context.read<ExpenseBloc>().add(AddCategoryRequested(
-                        name: nameController.text.trim(),
-                        iconCodepoint: selectedIcon,
-                        colorHex: selectedColor,
-                      ));
-                }
-              },
-              child: Text(
-                  existing != null ? context.l10n.update : context.l10n.add),
-            ),
-          ],
         ),
       ),
     );

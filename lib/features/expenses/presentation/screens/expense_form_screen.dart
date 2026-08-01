@@ -23,6 +23,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   List<WalletAccountEntity> _wallets = [];
   bool _useWallet = true;
   bool _isLoading = true;
+  bool _isPersonalNature = false;
 
   @override
   void initState() {
@@ -139,6 +140,199 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Expense Nature Selector (Business vs Personal)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isPersonalNature = false;
+                                final personalKeywords = [
+                                  'food',
+                                  'dining',
+                                  'entertainment',
+                                  'medical',
+                                  'doctor',
+                                  'hospital',
+                                  'medicine',
+                                  'education',
+                                  'school',
+                                  'college',
+                                  'tuition',
+                                  'fee',
+                                  'personal',
+                                  'family',
+                                  'shopping',
+                                  'clothing',
+                                  'grocery',
+                                  'groceries',
+                                  'home',
+                                  'house',
+                                  'movie',
+                                  'gift',
+                                  'recharge',
+                                  'subscription',
+                                  'life',
+                                  'health',
+                                  'self',
+                                  'draw',
+                                  'drawing',
+                                  'household',
+                                  'charity',
+                                  'vacation',
+                                  'trip'
+                                ];
+                                final biz = _categories.where((c) =>
+                                    !personalKeywords.any((p) =>
+                                        c.name.toLowerCase().contains(p)));
+                                if (biz.isNotEmpty) {
+                                  _selectedCategory = biz.first;
+                                }
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: !_isPersonalNature
+                                    ? const Color(0xFF0284C7)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.business_center_outlined,
+                                    size: 16,
+                                    color: !_isPersonalNature
+                                        ? Colors.white
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Business Expense',
+                                    style: TextStyle(
+                                      color: !_isPersonalNature
+                                          ? Colors.white
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                      fontWeight: !_isPersonalNature
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isPersonalNature = true;
+                                final personalKeywords = [
+                                  'food',
+                                  'dining',
+                                  'entertainment',
+                                  'medical',
+                                  'doctor',
+                                  'hospital',
+                                  'medicine',
+                                  'education',
+                                  'school',
+                                  'college',
+                                  'tuition',
+                                  'fee',
+                                  'personal',
+                                  'family',
+                                  'shopping',
+                                  'clothing',
+                                  'grocery',
+                                  'groceries',
+                                  'home',
+                                  'house',
+                                  'movie',
+                                  'gift',
+                                  'recharge',
+                                  'subscription',
+                                  'life',
+                                  'health',
+                                  'self',
+                                  'draw',
+                                  'drawing',
+                                  'household',
+                                  'charity',
+                                  'vacation',
+                                  'trip'
+                                ];
+                                final personal = _categories.where((c) =>
+                                    personalKeywords.any((p) =>
+                                        c.name.toLowerCase().contains(p)));
+                                if (personal.isNotEmpty) {
+                                  _selectedCategory = personal.first;
+                                }
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: _isPersonalNature
+                                    ? const Color(0xFF8B5CF6)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.person_outline,
+                                    size: 16,
+                                    color: _isPersonalNature
+                                        ? Colors.white
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Personal Expense',
+                                    style: TextStyle(
+                                      color: _isPersonalNature
+                                          ? Colors.white
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                      fontWeight: _isPersonalNature
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   // Category Picker
                   if (_isLoading)
                     const Center(child: CircularProgressIndicator())
@@ -253,16 +447,109 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   }
 
   Widget _buildCategoryGrid() {
+    final personalKeywords = [
+      'food',
+      'dining',
+      'entertainment',
+      'medical',
+      'doctor',
+      'hospital',
+      'medicine',
+      'education',
+      'school',
+      'college',
+      'tuition',
+      'fee',
+      'personal',
+      'family',
+      'shopping',
+      'clothing',
+      'grocery',
+      'groceries',
+      'home',
+      'house',
+      'movie',
+      'gift',
+      'recharge',
+      'subscription',
+      'life',
+      'health',
+      'self',
+      'draw',
+      'drawing',
+      'household',
+      'charity',
+      'vacation',
+      'trip'
+    ];
+
+    final filtered = _categories.where((cat) {
+      final isPersonalCat =
+          personalKeywords.any((p) => cat.name.toLowerCase().contains(p));
+      return _isPersonalNature ? isPersonalCat : !isPersonalCat;
+    }).toList();
+
+    final displayCategories = filtered.isNotEmpty ? filtered : _categories;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('${context.l10n.category} *',
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text('${context.l10n.category} *',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 14)),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () => _showQuickAddCategoryDialog(context),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.3)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.add, size: 14, color: AppColors.primary),
+                        SizedBox(width: 2),
+                        Text(
+                          'Add New',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              _isPersonalNature ? 'Personal Categories' : 'Business Categories',
+              style: TextStyle(
+                fontSize: 12,
+                color: _isPersonalNature
+                    ? const Color(0xFF8B5CF6)
+                    : const Color(0xFF0284C7),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: _categories.map((cat) {
+          children: displayCategories.map((cat) {
             final catColor = _hexToColor(cat.colorHex);
             final isSelected = _selectedCategory?.id == cat.id;
             return GestureDetector(
@@ -341,5 +628,138 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     } catch (_) {
       return const Color(0xFF6366F1);
     }
+  }
+
+  void _showQuickAddCategoryDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: (_isPersonalNature
+                              ? const Color(0xFF8B5CF6)
+                              : const Color(0xFF0284C7))
+                          .withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _isPersonalNature
+                          ? Icons.person_outline
+                          : Icons.business_center_outlined,
+                      color: _isPersonalNature
+                          ? const Color(0xFF8B5CF6)
+                          : const Color(0xFF0284C7),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    _isPersonalNature
+                        ? 'New Personal Category'
+                        : 'New Business Category',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: nameController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Category Name',
+                  hintText: 'e.g. Office Supplies, Marketing, Logistics',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(dContext),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(
+                            color: Colors.grey.shade300, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        context.l10n.cancel,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final name = nameController.text.trim();
+                        if (name.isNotEmpty) {
+                          try {
+                            final newId = await sl<AddCategory>()(
+                              name: name,
+                              iconCodepoint:
+                                  _isPersonalNature ? 0xe8cc : 0xe8f9,
+                              colorHex:
+                                  _isPersonalNature ? '#8B5CF6' : '#0284C7',
+                            );
+                            if (dContext.mounted) Navigator.pop(dContext);
+                            await _loadData();
+                            final created =
+                                _categories.where((c) => c.id == newId);
+                            if (created.isNotEmpty) {
+                              setState(
+                                  () => _selectedCategory = created.first);
+                            }
+                          } catch (_) {
+                            if (dContext.mounted) Navigator.pop(dContext);
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        context.l10n.add,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
