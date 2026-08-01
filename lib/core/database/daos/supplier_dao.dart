@@ -42,7 +42,12 @@ class SupplierDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<bool> updateSupplier(SuppliersCompanion supplier) {
-    return update(suppliers).replace(supplier);
+    return (update(suppliers)
+          ..where((s) =>
+              s.id.equals(supplier.id.value) &
+              s.businessId.equals(currentBusinessId)))
+        .write(supplier)
+        .then((rows) => rows > 0);
   }
 
   Future<void> softDeleteSupplier(int supplierId) {

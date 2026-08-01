@@ -42,7 +42,12 @@ class CustomerDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<bool> updateCustomer(CustomersCompanion customer) {
-    return update(customers).replace(customer);
+    return (update(customers)
+          ..where((c) =>
+              c.id.equals(customer.id.value) &
+              c.businessId.equals(currentBusinessId)))
+        .write(customer)
+        .then((rows) => rows > 0);
   }
 
   Future<void> softDeleteCustomer(int customerId) {

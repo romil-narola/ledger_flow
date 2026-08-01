@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/core.dart';
 import '../../supplier.dart';
 
@@ -20,6 +21,7 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
   final _emailController = TextEditingController();
   final _addressController = TextEditingController();
   final _notesController = TextEditingController();
+  SupplierEntity? _existingSupplier;
 
   @override
   void dispose() {
@@ -32,6 +34,7 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
   }
 
   void _prefill(SupplierEntity supplier) {
+    _existingSupplier = supplier;
     _nameController.text = supplier.name;
     _phoneController.text = supplier.phone ?? '';
     _emailController.text = supplier.email ?? '';
@@ -51,10 +54,18 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
       },
       child: BlocConsumer<SupplierBloc, SupplierState>(
         listener: (context, state) {
-          if (state is SupplierDetailLoaded && widget.isEditing) {
+          if (state is SupplierDetailLoaded &&
+              widget.isEditing &&
+              _existingSupplier == null) {
             _prefill(state.supplier);
           }
-          if (state is SupplierOperationSuccess) Navigator.pop(context);
+          if (state is SupplierOperationSuccess) {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              context.go('/suppliers');
+            }
+          }
           if (state is SupplierError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -65,6 +76,15 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
           }
         },
         builder: (context, state) {
+          if (state is SupplierDetailLoaded &&
+              widget.isEditing &&
+              _existingSupplier == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && _existingSupplier == null) {
+                _prefill(state.supplier);
+              }
+            });
+          }
           return Scaffold(
             appBar: AppBar(
                 title: Text(widget.isEditing
@@ -158,7 +178,24 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
         : _notesController.text.trim();
 
     if (widget.isEditing) {
-      // We need the existing supplier - handled via state
+      final existing = _existingSupplier;
+      bloc.add(UpdateSupplierRequested(
+        SupplierEntity(
+          id: widget.supplierId!,
+          name: name,
+          phone: phone,
+          email: email,
+          address: address,
+          notes: notes,
+          totalPurchases: existing?.totalPurchases ?? 0,
+          totalPayments: existing?.totalPayments ?? 0,
+          outstanding: existing?.outstanding ?? 0,
+          creditBalance: existing?.creditBalance ?? 0,
+          isActive: existing?.isActive ?? true,
+          createdAt: existing?.createdAt ?? DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      ));
     } else {
       bloc.add(AddSupplierRequested(
         name: name,
