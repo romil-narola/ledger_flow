@@ -6,6 +6,7 @@ import '../../../../core/core.dart';
 import '../../../customer/customer.dart';
 import '../../../supplier/supplier.dart';
 import '../../../wallet/wallet.dart';
+import '../../../expenses/expenses.dart';
 import '../../../ledger/ledger.dart';
 import '../../services/pdf_export_service.dart';
 import '../../services/excel_export_service.dart';
@@ -32,12 +33,22 @@ class _ReportsScreenState extends State<ReportsScreen> {
   List<SupplierEntity> _suppliers = [];
   List<WalletAccountEntity> _wallets = [];
 
+  double _totalSales = 0.0;
+  double _totalPurchases = 0.0;
+  double _businessExpenses = 0.0;
+  double _personalExpenses = 0.0;
+  double _customerPayouts = 0.0;
+  double _supplierPayouts = 0.0;
+  double _totalAvailableBalance = 0.0;
+  bool _isLoadingMetrics = false;
+
   final List<ReportType> _reportTypes = ReportType.values;
 
   @override
   void initState() {
     super.initState();
     _loadEntities();
+    _loadMetrics();
   }
 
   Future<void> _loadEntities() async {
@@ -56,6 +67,67 @@ class _ReportsScreenState extends State<ReportsScreen> {
         _wallets = wallets;
       });
     } catch (_) {}
+  }
+
+  Future<void> _loadMetrics() async {
+    setState(() => _isLoadingMetrics = true);
+    try {
+      final walletRepo = sl<WalletRepository>();
+      final supplierRepo = sl<SupplierRepository>();
+      final customerRepo = sl<CustomerRepository>();
+      final expenseRepo = sl<ExpenseRepository>();
+
+      final totalAvailable = await walletRepo.getTotalBalance();
+      final sales =
+          await customerRepo.getAllSales(from: _fromDate, to: _toDate);
+      final purchases =
+          await supplierRepo.getAllPurchases(from: _fromDate, to: _toDate);
+      final cPayments =
+          await customerRepo.getAllPayments(from: _fromDate, to: _toDate);
+      final sPayments =
+          await supplierRepo.getAllPayments(from: _fromDate, to: _toDate);
+      final expenses =
+          await expenseRepo.getAllExpenses(from: _fromDate, to: _toDate);
+
+      final salesVal = sales.fold(0.0, (sum, s) => sum + s.amount);
+      final purchasesVal = purchases.fold(0.0, (sum, p) => sum + p.amount);
+      final cPayVal = cPayments.fold(0.0, (sum, p) => sum + p.amount);
+      final sPayVal = sPayments.fold(0.0, (sum, p) => sum + p.amount);
+
+      final personalCategories = [
+        'food & dining',
+        'entertainment',
+        'medical',
+        'education',
+        'personal',
+        'family',
+        'shopping'
+      ];
+      double personalVal = 0.0;
+      double businessVal = 0.0;
+      for (final e in expenses) {
+        final isPersonal = personalCategories
+            .any((p) => e.categoryName.toLowerCase().contains(p));
+        if (isPersonal) {
+          personalVal += e.amount;
+        } else {
+          businessVal += e.amount;
+        }
+      }
+
+      setState(() {
+        _totalSales = salesVal;
+        _totalPurchases = purchasesVal;
+        _customerPayouts = cPayVal;
+        _supplierPayouts = sPayVal;
+        _businessExpenses = businessVal;
+        _personalExpenses = personalVal;
+        _totalAvailableBalance = totalAvailable;
+        _isLoadingMetrics = false;
+      });
+    } catch (_) {
+      setState(() => _isLoadingMetrics = false);
+    }
   }
 
   Future<void> _exportReport({required bool saveLocally}) async {
@@ -366,6 +438,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
           }
           break;
 
+        case ReportType.expenseReport:
+          final expenseRepo = sl<ExpenseRepository>();
+          final expenses =
+              await expenseRepo.getAllExpenses(from: _fromDate, to: _toDate);
+
+          if (_selectedFormat == ExportFormat.pdf) {
+            file = await PdfExportService.generateExpenseReport(
+              expenses: expenses,
+              subtitle: dateSubtitle,
+              l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+            );
+          } else {
+            file = await ExcelExportService.exportExpenseReport(
+              expenses: expenses,
+              l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+            );
+          }
+          break;
+
         case ReportType.paymentReport:
           final sPayments =
               await supplierRepo.getAllPayments(from: _fromDate, to: _toDate);
@@ -435,6 +530,32 @@ class _ReportsScreenState extends State<ReportsScreen> {
             to: DateTime.now(),
             limit: 1000,
           );
+          final expenseRepo = sl<ExpenseRepository>();
+          final monthlyExp = await expenseRepo.getAllExpenses(
+            from: DateTime.now().subtract(const Duration(days: 30)),
+            to: DateTime.now(),
+          );
+          final personalCategories = [
+            'food & dining',
+            'entertainment',
+            'medical',
+            'education',
+            'personal',
+            'family',
+            'shopping'
+          ];
+          double personalExpVal = 0.0;
+          double businessExpVal = 0.0;
+          for (final e in monthlyExp) {
+            final isPersonal = personalCategories
+                .any((p) => e.categoryName.toLowerCase().contains(p));
+            if (isPersonal) {
+              personalExpVal += e.amount;
+            } else {
+              businessExpVal += e.amount;
+            }
+          }
+
           if (_selectedFormat == ExportFormat.pdf) {
             file = await PdfExportService.generateLedgerReport(
               entries: entries,
@@ -447,6 +568,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
               totalPurchases: totalPurchasesVal,
               customerPayouts: customerPayoutsVal,
               supplierPayouts: supplierPayoutsVal,
+              personalExpenses: personalExpVal,
+              businessExpenses: businessExpVal,
             );
           } else {
             file = await ExcelExportService.exportLedger(
@@ -459,6 +582,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
               totalPurchases: totalPurchasesVal,
               customerPayouts: customerPayoutsVal,
               supplierPayouts: supplierPayoutsVal,
+              personalExpenses: personalExpVal,
+              businessExpenses: businessExpVal,
             );
           }
           break;
@@ -468,15 +593,41 @@ class _ReportsScreenState extends State<ReportsScreen> {
               await supplierRepo.getAllPurchases(from: _fromDate, to: _toDate);
           final sales =
               await customerRepo.getAllSales(from: _fromDate, to: _toDate);
+          final expenseRepo = sl<ExpenseRepository>();
+          final expenses =
+              await expenseRepo.getAllExpenses(from: _fromDate, to: _toDate);
 
           final double totalPurchases =
               purchases.fold(0.0, (sum, p) => sum + p.amount);
           final double totalSales = sales.fold(0.0, (sum, s) => sum + s.amount);
 
+          final personalCategories = [
+            'food & dining',
+            'entertainment',
+            'medical',
+            'education',
+            'personal',
+            'family',
+            'shopping'
+          ];
+          double personalExp = 0.0;
+          double businessExp = 0.0;
+          for (final e in expenses) {
+            final isPersonal = personalCategories
+                .any((p) => e.categoryName.toLowerCase().contains(p));
+            if (isPersonal) {
+              personalExp += e.amount;
+            } else {
+              businessExp += e.amount;
+            }
+          }
+
           if (_selectedFormat == ExportFormat.pdf) {
             file = await PdfExportService.generateProfitLossReport(
               totalSales: totalSales,
               totalPurchases: totalPurchases,
+              businessExpenses: businessExp,
+              personalExpenses: personalExp,
               from: _fromDate,
               to: _toDate,
               l10n: l10n,
@@ -489,6 +640,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
             file = await ExcelExportService.exportProfitLoss(
               totalSales: totalSales,
               totalPurchases: totalPurchases,
+              businessExpenses: businessExp,
+              personalExpenses: personalExp,
               from: _fromDate,
               to: _toDate,
               l10n: l10n,
@@ -912,12 +1065,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             _fromDate = null;
                             _toDate = null;
                           });
+                          _loadMetrics();
                         },
                         child: Text(context.l10n.resetDates),
                       ),
                     ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                 ],
+
+                // Live Summary Cards for Profit Loss, Monthly Summary & Expense Report
+                if (_selectedReportType == ReportType.profitLossStatement)
+                  _buildProfitLossCards(context)
+                else if (_selectedReportType == ReportType.monthlyReport)
+                  _buildMonthlyReportCards(context)
+                else if (_selectedReportType == ReportType.expenseReport)
+                  _buildExpenseReportCards(context),
+
+                const SizedBox(height: 16),
 
                 // Export Buttons
                 ElevatedButton.icon(
@@ -952,7 +1116,403 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return _selectedReportType == ReportType.ledgerReport ||
         _selectedReportType == ReportType.purchaseReport ||
         _selectedReportType == ReportType.salesReport ||
+        _selectedReportType == ReportType.expenseReport ||
         _selectedReportType == ReportType.paymentReport ||
         _selectedReportType == ReportType.profitLossStatement;
+  }
+
+  Widget _buildProfitLossCards(BuildContext context) {
+    if (_isLoadingMetrics) {
+      return const Center(
+          child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: CircularProgressIndicator(),
+      ));
+    }
+
+    final grossProfit = _totalSales - _totalPurchases;
+    final netOperating = grossProfit - _businessExpenses;
+    final netRetained = netOperating - _personalExpenses;
+    final isProfit = netRetained >= 0;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context)
+                .colorScheme
+                .outlineVariant
+                .withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.analytics_outlined,
+                  color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Profit & Loss Financial Summary',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 2.2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            children: [
+              _buildMetricCard(
+                context,
+                title: context.l10n.totalSales,
+                value: CurrencyFormatter.format(_totalSales),
+                color: AppColors.creditEntry,
+                icon: Icons.sell_outlined,
+              ),
+              _buildMetricCard(
+                context,
+                title: context.l10n.totalPurchases,
+                value: CurrencyFormatter.format(_totalPurchases),
+                color: AppColors.debit,
+                icon: Icons.shopping_cart_outlined,
+              ),
+              _buildMetricCard(
+                context,
+                title: 'Business Expenses',
+                value: CurrencyFormatter.format(_businessExpenses),
+                color: const Color(0xFF0284C7),
+                icon: Icons.business_center_outlined,
+              ),
+              _buildMetricCard(
+                context,
+                title: 'Personal Expenses',
+                value: CurrencyFormatter.format(_personalExpenses),
+                color: const Color(0xFF8B5CF6),
+                icon: Icons.person_outline,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isProfit
+                    ? [const Color(0xFF059669), const Color(0xFF10B981)]
+                    : [const Color(0xFFDC2626), const Color(0xFFEF4444)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Net Retained ${isProfit ? "Profit" : "Loss"}',
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 12),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      CurrencyFormatter.format(netRetained.abs()),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isProfit ? Icons.trending_up : Icons.trending_down,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                )
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonthlyReportCards(BuildContext context) {
+    if (_isLoadingMetrics) {
+      return const Center(
+          child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: CircularProgressIndicator(),
+      ));
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context)
+                .colorScheme
+                .outlineVariant
+                .withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.calendar_month_outlined,
+                  color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Monthly Summary Breakdown',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 2.2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            children: [
+              _buildMetricCard(
+                context,
+                title: context.l10n.totalSales,
+                value: CurrencyFormatter.format(_totalSales),
+                color: AppColors.creditEntry,
+                icon: Icons.sell_outlined,
+              ),
+              _buildMetricCard(
+                context,
+                title: context.l10n.totalPurchases,
+                value: CurrencyFormatter.format(_totalPurchases),
+                color: AppColors.debit,
+                icon: Icons.shopping_cart_outlined,
+              ),
+              _buildMetricCard(
+                context,
+                title: context.l10n.customerPayouts,
+                value: CurrencyFormatter.format(_customerPayouts),
+                color: const Color(0xFF10B981),
+                icon: Icons.payments_outlined,
+              ),
+              _buildMetricCard(
+                context,
+                title: context.l10n.supplierPayouts,
+                value: CurrencyFormatter.format(_supplierPayouts),
+                color: const Color(0xFFF59E0B),
+                icon: Icons.payment_outlined,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricCard(
+                  context,
+                  title: 'Operating Expenses',
+                  value: CurrencyFormatter.format(_businessExpenses),
+                  color: const Color(0xFF0284C7),
+                  icon: Icons.business_center_outlined,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildMetricCard(
+                  context,
+                  title: 'Personal Expenses',
+                  value: CurrencyFormatter.format(_personalExpenses),
+                  color: const Color(0xFF8B5CF6),
+                  icon: Icons.person_outline,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildMetricCard(
+            context,
+            title: context.l10n.totalAvailableBalance,
+            value: CurrencyFormatter.format(_totalAvailableBalance),
+            color: const Color(0xFF10B981),
+            icon: Icons.account_balance_wallet_outlined,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpenseReportCards(BuildContext context) {
+    if (_isLoadingMetrics) {
+      return const Center(
+          child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: CircularProgressIndicator(),
+      ));
+    }
+
+    final totalExp = _businessExpenses + _personalExpenses;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context)
+                .colorScheme
+                .outlineVariant
+                .withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.receipt_long_outlined,
+                  color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Expense Summary & Bifurcation',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 2.2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            children: [
+              _buildMetricCard(
+                context,
+                title: 'Personal Expenses',
+                value: CurrencyFormatter.format(_personalExpenses),
+                color: const Color(0xFF8B5CF6),
+                icon: Icons.person_outline,
+              ),
+              _buildMetricCard(
+                context,
+                title: 'Operating Expenses',
+                value: CurrencyFormatter.format(_businessExpenses),
+                color: const Color(0xFF0284C7),
+                icon: Icons.business_center_outlined,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildMetricCard(
+            context,
+            title: 'Total Expenses (Operating + Personal)',
+            value: CurrencyFormatter.format(totalExp),
+            color: const Color(0xFF4F46E5),
+            icon: Icons.analytics_outlined,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricCard(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required Color color,
+    required IconData icon,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontSize: 10, color: AppColors.textSecondaryLight),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

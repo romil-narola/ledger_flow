@@ -98,36 +98,156 @@ class _SummaryView extends StatelessWidget {
                 const Expanded(
                     child: Center(child: CircularProgressIndicator()))
               else if (state is ExpenseSummaryLoaded) ...[
-                // Grand Total Card
+                // Grand Total & Bifurcation Analysis Card
                 Container(
                   margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
                   ),
-                  child: Row(
+                  child: Column(
                     children: [
-                      const Icon(Icons.receipt_long,
-                          color: Colors.white, size: 32),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
                         children: [
-                          Text(context.l10n.totalExpenses,
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 14)),
-                          Text(
-                            CurrencyFormatter.format(state.grandTotal),
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.analytics_outlined,
+                                color: Colors.white, size: 28),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(context.l10n.totalExpenses,
+                                    style: const TextStyle(
+                                        color: Colors.white70, fontSize: 13)),
+                                Text(
+                                  CurrencyFormatter.format(state.grandTotal),
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 16),
+                      const Divider(color: Colors.white24, height: 1),
+                      const SizedBox(height: 14),
+                      // Bifurcation Breakdown
+                      Builder(builder: (context) {
+                        final personalCategories = [
+                          'food & dining',
+                          'entertainment',
+                          'medical',
+                          'education',
+                          'personal',
+                          'family',
+                          'shopping'
+                        ];
+                        double personalSpent = 0.0;
+                        double businessSpent = 0.0;
+
+                        for (final s in state.summaries) {
+                          final nameLower = s.category.name.toLowerCase();
+                          if (personalCategories.any((p) => nameLower.contains(p))) {
+                            personalSpent += s.totalSpent;
+                          } else {
+                            businessSpent += s.totalSpent;
+                          }
+                        }
+
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.person_outline,
+                                            color: Colors.white, size: 14),
+                                        SizedBox(width: 4),
+                                        Text('Personal Exp.',
+                                            style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 11)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      CurrencyFormatter.format(personalSpent),
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.business_center_outlined,
+                                            color: Colors.white, size: 14),
+                                        SizedBox(width: 4),
+                                        Text('Business Exp.',
+                                            style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 11)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      CurrencyFormatter.format(businessSpent),
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
                     ],
                   ),
                 ),

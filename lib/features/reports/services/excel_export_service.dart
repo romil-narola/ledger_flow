@@ -5,6 +5,7 @@ import '../../../../core/core.dart';
 import '../../wallet/wallet.dart';
 import '../../supplier/supplier.dart';
 import '../../customer/customer.dart';
+import '../../expenses/expenses.dart';
 import '../../ledger/ledger.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -19,6 +20,8 @@ class ExcelExportService {
     double? totalPurchases,
     double? customerPayouts,
     double? supplierPayouts,
+    double? personalExpenses,
+    double? businessExpenses,
   }) async {
     final excel = Excel.createExcel();
     final sheet = excel[sheetName];
@@ -79,6 +82,24 @@ class ExcelExportService {
       sheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRow))
           .value = DoubleCellValue(supplierPayouts);
+      startRow++;
+    }
+    if (personalExpenses != null && personalExpenses > 0) {
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: startRow))
+          .value = TextCellValue('Personal Expenses');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRow))
+          .value = DoubleCellValue(personalExpenses);
+      startRow++;
+    }
+    if (businessExpenses != null && businessExpenses > 0) {
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: startRow))
+          .value = TextCellValue('Operating Expenses');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRow))
+          .value = DoubleCellValue(businessExpenses);
       startRow++;
     }
     startRow++; // Blank separator
@@ -381,6 +402,8 @@ class ExcelExportService {
     required double totalSales,
     required double totalPurchases,
     required AppLocalizations l10n,
+    double businessExpenses = 0.0,
+    double personalExpenses = 0.0,
     DateTime? from,
     DateTime? to,
     double? openingBalance,
@@ -442,15 +465,25 @@ class ExcelExportService {
     }
     rowIdx++;
 
+    final grossProfit = totalSales - totalPurchases;
+    final netOperating = grossProfit - businessExpenses;
+    final netRetained = netOperating - personalExpenses;
+
     final rows = [
       [l10n.income, ''],
       ['${l10n.totalSales} (${l10n.operatingIncome})', totalSales],
       ['', ''],
       ['${l10n.expense} (${l10n.costOfSales})', ''],
       ['${l10n.totalPurchases} (${l10n.expense})', totalPurchases],
+      ['Gross Profit (Sales - Purchases)', grossProfit],
+      ['', ''],
+      ['OPERATING & PERSONAL EXPENSES', ''],
+      ['Business Operating Expenses', businessExpenses],
+      ['Net Operating Business Profit', netOperating],
+      ['Personal Out-of-Pocket Expenses', personalExpenses],
       ['', ''],
       [l10n.summary, ''],
-      ['${l10n.netProfit} / (${l10n.netLoss})', totalSales - totalPurchases],
+      ['Net Retained Profit / (Loss)', netRetained],
     ];
 
     for (var r = 0; r < rows.length; r++) {
@@ -861,6 +894,127 @@ class ExcelExportService {
     final output = await getTemporaryDirectory();
     final file = File(
         '${output.path}/Purchase_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx');
+    final bytes = excel.save();
+    if (bytes != null) {
+      await file.writeAsBytes(bytes);
+    }
+    return file;
+  }
+
+  static Future<File> exportExpenseReport({
+    required List<ExpenseEntity> expenses,
+    required AppLocalizations l10n,
+    double? openingBalance,
+    double? totalAvailableBalance,
+  }) async {
+    final excel = Excel.createExcel();
+    final sheetName = '${l10n.expenses}_${l10n.reports}';
+    final sheet = excel[sheetName];
+    if (excel.sheets.containsKey('Sheet1')) {
+      excel.delete('Sheet1');
+    }
+
+    final personalCategories = [
+      'food & dining',
+      'entertainment',
+      'medical',
+      'education',
+      'personal',
+      'family',
+      'shopping'
+    ];
+    double personalTotal = 0.0;
+    double businessTotal = 0.0;
+    for (final e in expenses) {
+      final isPersonal = personalCategories
+          .any((p) => e.categoryName.toLowerCase().contains(p));
+      if (isPersonal) {
+        personalTotal += e.amount;
+      } else {
+        businessTotal += e.amount;
+      }
+    }
+
+    final totalExpenses = expenses.fold(0.0, (sum, e) => sum + e.amount);
+
+    int startRow = 0;
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: startRow)).value =
+        TextCellValue(l10n.totalExpenses);
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRow)).value =
+        DoubleCellValue(totalExpenses);
+    startRow++;
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: startRow)).value =
+        TextCellValue('Personal Expenses');
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRow)).value =
+        DoubleCellValue(personalTotal);
+    startRow++;
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: startRow)).value =
+        TextCellValue('Business Expenses');
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRow)).value =
+        DoubleCellValue(businessTotal);
+    startRow++;
+
+    if (openingBalance != null) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: startRow)).value =
+          TextCellValue(l10n.openingBalance);
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRow)).value =
+          DoubleCellValue(openingBalance);
+      startRow++;
+    }
+    if (totalAvailableBalance != null) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: startRow)).value =
+          TextCellValue(l10n.totalAvailableBalance);
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: startRow)).value =
+          DoubleCellValue(totalAvailableBalance);
+      startRow++;
+    }
+    startRow++;
+
+    final headers = [
+      l10n.date,
+      l10n.referenceNo,
+      'Type',
+      l10n.category,
+      l10n.walletAccount,
+      l10n.description,
+      l10n.amount
+    ];
+    for (var col = 0; col < headers.length; col++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: startRow)).value =
+          TextCellValue(headers[col]);
+    }
+    startRow++;
+
+    for (var row = 0; row < expenses.length; row++) {
+      final e = expenses[row];
+      final isPersonal = personalCategories
+          .any((p) => e.categoryName.toLowerCase().contains(p));
+      final values = [
+        DateFormatter.format(e.date),
+        e.referenceNumber,
+        isPersonal ? 'Personal' : 'Business',
+        e.categoryName,
+        e.walletName ?? '-',
+        e.description,
+        e.amount
+      ];
+      for (var col = 0; col < values.length; col++) {
+        final cell = sheet.cell(CellIndex.indexByColumnRow(
+            columnIndex: col, rowIndex: startRow + row));
+        final val = values[col];
+        if (val is double) {
+          cell.value = DoubleCellValue(val);
+        } else {
+          cell.value = TextCellValue(val.toString());
+        }
+      }
+    }
+
+    final output = await getTemporaryDirectory();
+    final file = File(
+        '${output.path}/Expense_Report_${DateTime.now().millisecondsSinceEpoch}.xlsx');
     final bytes = excel.save();
     if (bytes != null) {
       await file.writeAsBytes(bytes);

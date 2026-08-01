@@ -46,6 +46,8 @@ extension ReportTypeLocalization on ReportType {
         return l10n.purchaseReport;
       case ReportType.salesReport:
         return l10n.salesReport;
+      case ReportType.expenseReport:
+        return '${l10n.expenses} ${l10n.reports}';
       case ReportType.paymentReport:
         return l10n.paymentsReport;
       case ReportType.ledgerReport:

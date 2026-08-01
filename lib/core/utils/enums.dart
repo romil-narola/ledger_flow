@@ -56,6 +56,7 @@ enum ReportType {
   walletReport('Wallet Report'),
   purchaseReport('Purchase Report'),
   salesReport('Sales Report'),
+  expenseReport('Expense Report'),
   paymentReport('Payment Report'),
   ledgerReport('Ledger Report'),
   monthlyReport('Monthly Report'),

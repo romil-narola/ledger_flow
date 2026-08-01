@@ -287,29 +287,81 @@ class _ExpenseCard extends StatelessWidget {
         ),
         title: Text(expense.description,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        subtitle: Row(
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: catColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(expense.categoryName,
-                  style: TextStyle(
-                      color: catColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500)),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: catColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(expense.categoryName,
+                      style: TextStyle(
+                          color: catColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500)),
+                ),
+                const SizedBox(width: 6),
+                Builder(builder: (context) {
+                  final personalCategories = [
+                    'food & dining',
+                    'entertainment',
+                    'medical',
+                    'education',
+                    'personal',
+                    'family',
+                    'shopping'
+                  ];
+                  final isPersonal = personalCategories.any(
+                      (p) => expense.categoryName.toLowerCase().contains(p));
+                  final badgeColor =
+                      isPersonal ? const Color(0xFF8B5CF6) : const Color(0xFF0284C7);
+
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: badgeColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isPersonal
+                              ? Icons.person_outline
+                              : Icons.business_center_outlined,
+                          size: 10,
+                          color: badgeColor,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          isPersonal ? 'Personal' : 'Business',
+                          style: TextStyle(
+                              color: badgeColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                if (expense.walletName != null) ...[
+                  const SizedBox(width: 6),
+                  const Icon(Icons.account_balance_wallet_outlined,
+                      size: 12, color: AppColors.textSecondaryLight),
+                  const SizedBox(width: 2),
+                  Text(expense.walletName!,
+                      style: const TextStyle(
+                          fontSize: 11, color: AppColors.textSecondaryLight)),
+                ],
+              ],
             ),
-            if (expense.walletName != null) ...[
-              const SizedBox(width: 6),
-              const Icon(Icons.account_balance_wallet_outlined,
-                  size: 12, color: AppColors.textSecondaryLight),
-              const SizedBox(width: 2),
-              Text(expense.walletName!,
-                  style: const TextStyle(
-                      fontSize: 11, color: AppColors.textSecondaryLight)),
-            ],
           ],
         ),
         trailing: Row(

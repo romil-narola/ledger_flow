@@ -8,6 +8,7 @@ import '../../../../core/core.dart';
 import '../../wallet/wallet.dart';
 import '../../supplier/supplier.dart';
 import '../../customer/customer.dart';
+import '../../expenses/expenses.dart';
 import '../../ledger/ledger.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -78,6 +79,8 @@ class PdfExportService {
     double? totalPurchases,
     double? customerPayouts,
     double? supplierPayouts,
+    double? personalExpenses,
+    double? businessExpenses,
     double? totalDebit,
     double? totalCredit,
     required AppLocalizations l10n,
@@ -181,6 +184,28 @@ class PdfExportService {
         bgColor: PdfColors.purple50,
         borderColor: PdfColors.purple200,
         textColor: PdfColors.purple900,
+      ));
+    }
+
+    if (personalExpenses != null && personalExpenses > 0) {
+      if (chips.isNotEmpty) chips.add(pw.SizedBox(width: 6));
+      chips.add(buildChip(
+        label: 'Personal Exp.',
+        amount: personalExpenses,
+        bgColor: PdfColors.purple50,
+        borderColor: PdfColors.purple200,
+        textColor: PdfColors.purple900,
+      ));
+    }
+
+    if (businessExpenses != null && businessExpenses > 0) {
+      if (chips.isNotEmpty) chips.add(pw.SizedBox(width: 6));
+      chips.add(buildChip(
+        label: 'Operating Exp.',
+        amount: businessExpenses,
+        bgColor: PdfColors.indigo50,
+        borderColor: PdfColors.indigo200,
+        textColor: PdfColors.indigo900,
       ));
     }
 
@@ -353,6 +378,8 @@ class PdfExportService {
     double? totalPurchases,
     double? customerPayouts,
     double? supplierPayouts,
+    double? personalExpenses,
+    double? businessExpenses,
   }) async {
     final pdf = pw.Document();
     final theme = await _theme();
@@ -412,6 +439,8 @@ class PdfExportService {
               totalPurchases: totalPurchases,
               customerPayouts: customerPayouts,
               supplierPayouts: supplierPayouts,
+              personalExpenses: personalExpenses,
+              businessExpenses: businessExpenses,
               totalDebit: totalDebit,
               totalCredit: totalCredit,
               l10n: l10n,
@@ -675,6 +704,8 @@ class PdfExportService {
     required double totalSales,
     required double totalPurchases,
     required AppLocalizations l10n,
+    double businessExpenses = 0.0,
+    double personalExpenses = 0.0,
     DateTime? from,
     DateTime? to,
     double? openingBalance,
@@ -685,8 +716,10 @@ class PdfExportService {
     final pdf = pw.Document();
     final theme = await _theme();
 
-    final double netProfit = totalSales - totalPurchases;
-    final isProfit = netProfit >= 0;
+    final double grossProfit = totalSales - totalPurchases;
+    final double netOperatingProfit = grossProfit - businessExpenses;
+    final double netFinalBalance = netOperatingProfit - personalExpenses;
+    final isProfit = netFinalBalance >= 0;
     final String dateRange = (from != null && to != null)
         ? '${l10n.dateRange}: ${DateFormatter.format(from)} - ${DateFormatter.format(to)}'
         : l10n.allTypes;
@@ -753,7 +786,7 @@ class PdfExportService {
               pw.SizedBox(height: 8),
               pw.Divider(thickness: 0.5),
 
-              // Expense Section
+              // Expense & Purchase Section
               pw.SizedBox(height: 8),
               pw.Text(l10n.expense.toUpperCase(),
                   style: pw.TextStyle(
@@ -765,6 +798,58 @@ class PdfExportService {
                   pw.Text('${l10n.totalPurchases} (${l10n.costOfSales})',
                       style: const pw.TextStyle(fontSize: 8.5)),
                   pw.Text(CurrencyFormatter.formatPdf(totalPurchases),
+                      style: pw.TextStyle(
+                          fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.SizedBox(height: 4),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Gross Profit (Sales - Purchases)',
+                      style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700)),
+                  pw.Text(CurrencyFormatter.formatPdf(grossProfit),
+                      style: pw.TextStyle(
+                          fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.SizedBox(height: 8),
+              pw.Divider(thickness: 0.5),
+
+              // Operating & Personal Expenses Section
+              pw.SizedBox(height: 8),
+              pw.Text('OPERATING & PERSONAL EXPENSES',
+                  style: pw.TextStyle(
+                      fontSize: 10.5, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 6),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Business Operating Expenses',
+                      style: const pw.TextStyle(fontSize: 8.5)),
+                  pw.Text(CurrencyFormatter.formatPdf(businessExpenses),
+                      style: pw.TextStyle(
+                          fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.SizedBox(height: 4),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Net Operating Business Profit',
+                      style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700)),
+                  pw.Text(CurrencyFormatter.formatPdf(netOperatingProfit),
+                      style: pw.TextStyle(
+                          fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.SizedBox(height: 4),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Personal Out-of-Pocket Expenses',
+                      style: const pw.TextStyle(fontSize: 8.5)),
+                  pw.Text(CurrencyFormatter.formatPdf(personalExpenses),
                       style: pw.TextStyle(
                           fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
                 ],
@@ -783,11 +868,11 @@ class PdfExportService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                        '${l10n.total} ${isProfit ? l10n.netProfit.toUpperCase() : l10n.netLoss.toUpperCase()}',
+                        'NET RETAINED ${isProfit ? l10n.netProfit.toUpperCase() : l10n.netLoss.toUpperCase()}',
                         style: pw.TextStyle(
                             fontSize: 10.5, fontWeight: pw.FontWeight.bold)),
                     pw.Text(
-                      CurrencyFormatter.formatPdf(netProfit.abs()),
+                      CurrencyFormatter.formatPdf(netFinalBalance.abs()),
                       style: pw.TextStyle(
                         fontSize: 10.5,
                         fontWeight: pw.FontWeight.bold,
@@ -1329,6 +1414,162 @@ class PdfExportService {
     final output = await getTemporaryDirectory();
     final file = File(
         '${output.path}/Purchase_Report_${DateTime.now().millisecondsSinceEpoch}.pdf');
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  /// Dedicated Expense Report Generator
+  static Future<File> generateExpenseReport({
+    required List<ExpenseEntity> expenses,
+    required AppLocalizations l10n,
+    String? subtitle,
+    double? openingBalance,
+    double? totalAvailableBalance,
+  }) async {
+    final pdf = pw.Document();
+    final theme = await _theme();
+    final personalCategories = [
+      'food & dining',
+      'entertainment',
+      'medical',
+      'education',
+      'personal',
+      'family',
+      'shopping'
+    ];
+    double personalTotal = 0.0;
+    double businessTotal = 0.0;
+    final double totalExpenses = expenses.fold(0.0, (sum, e) => sum + e.amount);
+    for (final e in expenses) {
+      final isPersonal = personalCategories
+          .any((p) => e.categoryName.toLowerCase().contains(p));
+      if (isPersonal) {
+        personalTotal += e.amount;
+      } else {
+        businessTotal += e.amount;
+      }
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageTheme: pw.PageTheme(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(20),
+          theme: theme,
+        ),
+        build: (pw.Context context) {
+          return [
+            pw.Header(
+              level: 0,
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                          '${l10n.appTitle} ${l10n.expenses} ${l10n.reports}',
+                          style: pw.TextStyle(
+                              fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if (subtitle != null)
+                        pw.Text(subtitle,
+                            style: const pw.TextStyle(fontSize: 8.5)),
+                    ],
+                  ),
+                  pw.Text(DateFormatter.format(DateTime.now()),
+                      style: const pw.TextStyle(fontSize: 8.5)),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 8),
+
+            _buildSummaryBox(
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              totalDebit: totalExpenses,
+              l10n: l10n,
+            ),
+            pw.SizedBox(height: 6),
+
+            // Bifurcation Box
+            pw.Container(
+              padding: const pw.EdgeInsets.all(8),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.indigo50,
+                borderRadius: pw.BorderRadius.circular(6),
+                border: pw.Border.all(color: PdfColors.indigo200),
+              ),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+                children: [
+                  pw.Text(
+                    'Personal Expenses: ${CurrencyFormatter.formatPdf(personalTotal)}',
+                    style: pw.TextStyle(
+                        fontSize: 8.5,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.purple900),
+                  ),
+                  pw.Text(
+                    'Business Expenses: ${CurrencyFormatter.formatPdf(businessTotal)}',
+                    style: pw.TextStyle(
+                        fontSize: 8.5,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.blue900),
+                  ),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 8),
+
+            pw.TableHelper.fromTextArray(
+              headers: [
+                l10n.date,
+                l10n.referenceNo,
+                'Type',
+                l10n.category,
+                l10n.walletAccount,
+                l10n.description,
+                l10n.amount
+              ],
+              data: expenses.map((e) {
+                final isPersonal = personalCategories
+                    .any((p) => e.categoryName.toLowerCase().contains(p));
+                final wallet = e.walletName ?? '-';
+                return [
+                  DateFormatter.format(e.date),
+                  e.referenceNumber,
+                  isPersonal ? 'Personal' : 'Business',
+                  e.categoryName,
+                  wallet,
+                  e.description,
+                  CurrencyFormatter.formatPdf(e.amount),
+                ];
+              }).toList(),
+              headerStyle:
+                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.0),
+              cellStyle: const pw.TextStyle(fontSize: 7.5),
+              headerDecoration:
+                  const pw.BoxDecoration(color: PdfColors.grey200),
+              cellPadding:
+                  const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+              cellAlignments: {
+                0: pw.Alignment.centerLeft,
+                1: pw.Alignment.centerLeft,
+                2: pw.Alignment.centerLeft,
+                3: pw.Alignment.centerLeft,
+                4: pw.Alignment.centerLeft,
+                5: pw.Alignment.centerLeft,
+                6: pw.Alignment.centerRight,
+              },
+            ),
+          ];
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final file = File(
+        '${output.path}/Expense_Report_${DateTime.now().millisecondsSinceEpoch}.pdf');
     await file.writeAsBytes(await pdf.save());
     return file;
   }
