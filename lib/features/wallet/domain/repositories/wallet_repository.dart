@@ -46,6 +46,10 @@ class WalletTransactionItem {
   final double credit;
   final double balance;
   final DateTime date;
+  final String? supplierName;
+  final String? supplierPhone;
+  final String? customerName;
+  final String? customerPhone;
 
   const WalletTransactionItem({
     required this.id,
@@ -56,5 +60,12 @@ class WalletTransactionItem {
     required this.credit,
     required this.balance,
     required this.date,
+    this.supplierName,
+    this.supplierPhone,
+    this.customerName,
+    this.customerPhone,
   });
+
+  String? get partyName => customerName ?? supplierName;
+  String? get partyPhone => customerPhone ?? supplierPhone;
 }

@@ -1,7 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/core.dart';
+import '../../../reports/services/excel_export_service.dart';
+import '../../../reports/services/pdf_export_service.dart';
+import '../../../wallet/wallet.dart';
 import '../../customer.dart';
 
 class CustomerLedgerScreen extends StatelessWidget {
@@ -41,16 +47,88 @@ class _CustomerLedgerViewState extends State<_CustomerLedgerView>
     super.dispose();
   }
 
+  Future<void> _exportCustomerReport({
+    required CustomerEntity customer,
+    required bool isPdf,
+    required bool saveLocally,
+  }) async {
+    final l10n = context.l10n;
+    try {
+      final entries =
+          await sl<CustomerRepository>().getCustomerLedger(customer.id);
+      final totalAvailableBalance =
+          await sl<WalletRepository>().getTotalBalance();
+      final file = isPdf
+          ? await PdfExportService.generateCustomerLedgerReport(
+              customer: customer,
+              entries: entries,
+              l10n: l10n,
+              totalAvailableBalance: totalAvailableBalance,
+            )
+          : await ExcelExportService.exportCustomerLedger(
+              customer: customer,
+              entries: entries,
+              l10n: l10n,
+              totalAvailableBalance: totalAvailableBalance,
+            );
+
+      if (saveLocally) {
+        final ext = isPdf ? 'pdf' : 'xlsx';
+        final name =
+            'Customer_${customer.name}_report_${DateTime.now().millisecondsSinceEpoch}.$ext';
+        Directory? targetDir;
+        if (Platform.isAndroid) {
+          targetDir = Directory('/storage/emulated/0/Download');
+          if (!await targetDir.exists()) {
+            targetDir = await getDownloadsDirectory();
+          }
+        } else {
+          targetDir = await getApplicationDocumentsDirectory();
+        }
+
+        if (targetDir != null) {
+          final localFile = File('${targetDir.path}/$name');
+          await file.copy(localFile.path);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${l10n.reportSavedTo}: ${localFile.path}'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        }
+      } else {
+        await Share.shareXFiles([XFile(file.path)],
+            text: '${l10n.exported} ${customer.name}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.exportFailed}: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CustomerBloc, CustomerState>(
       builder: (context, state) {
         String title = 'Customer Ledger';
+        CustomerEntity? currentCustomer;
+
         if (state is CustomerDetailLoaded) {
           title = state.customer.name;
+          currentCustomer = state.customer;
         } else if (state is CustomerLedgerLoaded) {
           title = state.customer.name;
+          currentCustomer = state.customer;
         }
+
         return Scaffold(
           appBar: AppBar(
             title: Text(title),
@@ -67,6 +145,80 @@ class _CustomerLedgerViewState extends State<_CustomerLedgerView>
                 icon: const Icon(Icons.payments_outlined),
                 tooltip: context.l10n.addPayment,
               ),
+              if (currentCustomer != null)
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.ios_share),
+                  tooltip: context.l10n.reports,
+                  onSelected: (val) {
+                    if (val == 'download_pdf') {
+                      _exportCustomerReport(
+                          customer: currentCustomer!,
+                          isPdf: true,
+                          saveLocally: true);
+                    } else if (val == 'share_pdf') {
+                      _exportCustomerReport(
+                          customer: currentCustomer!,
+                          isPdf: true,
+                          saveLocally: false);
+                    } else if (val == 'download_excel') {
+                      _exportCustomerReport(
+                          customer: currentCustomer!,
+                          isPdf: false,
+                          saveLocally: true);
+                    } else if (val == 'share_excel') {
+                      _exportCustomerReport(
+                          customer: currentCustomer!,
+                          isPdf: false,
+                          saveLocally: false);
+                    }
+                  },
+                  itemBuilder: (ctx) => [
+                    PopupMenuItem(
+                      value: 'download_pdf',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.download,
+                              color: AppColors.primary, size: 20),
+                          const SizedBox(width: 8),
+                          Text('${ctx.l10n.saveToLocalStorage} (PDF)'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'share_pdf',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.share,
+                              color: AppColors.primary, size: 20),
+                          const SizedBox(width: 8),
+                          Text('${ctx.l10n.shareSendReport} (PDF)'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'download_excel',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.grid_on,
+                              color: AppColors.success, size: 20),
+                          const SizedBox(width: 8),
+                          Text('${ctx.l10n.saveToLocalStorage} (Excel)'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'share_excel',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.share,
+                              color: AppColors.success, size: 20),
+                          const SizedBox(width: 8),
+                          Text('${ctx.l10n.shareSendReport} (Excel)'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
             ],
             bottom: TabBar(
               controller: _tabController,

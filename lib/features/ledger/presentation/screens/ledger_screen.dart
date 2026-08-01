@@ -1,7 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/core.dart';
+import '../../../reports/services/excel_export_service.dart';
+import '../../../reports/services/pdf_export_service.dart';
 import '../../../wallet/wallet.dart';
 import '../../ledger.dart';
 
@@ -55,6 +60,78 @@ class _LedgerViewState extends State<_LedgerView> {
     super.dispose();
   }
 
+  Future<void> _exportLedgerReport({
+    required BuildContext context,
+    required List<LedgerEntryEntity> entries,
+    required bool isPdf,
+    required bool saveLocally,
+  }) async {
+    final l10n = context.l10n;
+    try {
+      final walletRepo = sl<WalletRepository>();
+      final wallets = await walletRepo.getWallets();
+      final totalAvailableBalance = await walletRepo.getTotalBalance();
+      final openingBalance =
+          wallets.fold(0.0, (sum, w) => sum + w.openingBalance);
+
+      final file = isPdf
+          ? await PdfExportService.generateLedgerReport(
+              entries: entries,
+              title: l10n.generalLedgerReport,
+              l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+            )
+          : await ExcelExportService.exportLedger(
+              entries: entries,
+              sheetName: l10n.ledger,
+              l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+            );
+
+      if (saveLocally) {
+        final ext = isPdf ? 'pdf' : 'xlsx';
+        final name =
+            'General_Ledger_report_${DateTime.now().millisecondsSinceEpoch}.$ext';
+        Directory? targetDir;
+        if (Platform.isAndroid) {
+          targetDir = Directory('/storage/emulated/0/Download');
+          if (!await targetDir.exists()) {
+            targetDir = await getDownloadsDirectory();
+          }
+        } else {
+          targetDir = await getApplicationDocumentsDirectory();
+        }
+
+        if (targetDir != null) {
+          final localFile = File('${targetDir.path}/$name');
+          await file.copy(localFile.path);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${l10n.reportSavedTo}: ${localFile.path}'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        }
+      } else {
+        await Share.shareXFiles([XFile(file.path)],
+            text: '${l10n.exported} ${l10n.generalLedgerReport}');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.exportFailed}: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
@@ -88,6 +165,12 @@ class _LedgerViewState extends State<_LedgerView> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final ledgerState = context.watch<LedgerBloc>().state;
+    List<LedgerEntryEntity> currentEntries = [];
+    if (ledgerState is LedgerLoaded) {
+      currentEntries = ledgerState.entries;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.chronologicalLedger),
@@ -105,10 +188,80 @@ class _LedgerViewState extends State<_LedgerView> {
             onPressed: () => _showFilterSheet(context),
             tooltip: l10n.filterLedger,
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => _applyFilters(context),
-            tooltip: l10n.refresh,
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.ios_share),
+            tooltip: l10n.reports,
+            onSelected: (val) {
+              if (val == 'download_pdf') {
+                _exportLedgerReport(
+                    context: context,
+                    entries: currentEntries,
+                    isPdf: true,
+                    saveLocally: true);
+              } else if (val == 'share_pdf') {
+                _exportLedgerReport(
+                    context: context,
+                    entries: currentEntries,
+                    isPdf: true,
+                    saveLocally: false);
+              } else if (val == 'download_excel') {
+                _exportLedgerReport(
+                    context: context,
+                    entries: currentEntries,
+                    isPdf: false,
+                    saveLocally: true);
+              } else if (val == 'share_excel') {
+                _exportLedgerReport(
+                    context: context,
+                    entries: currentEntries,
+                    isPdf: false,
+                    saveLocally: false);
+              }
+            },
+            itemBuilder: (ctx) => [
+              PopupMenuItem(
+                value: 'download_pdf',
+                child: Row(
+                  children: [
+                    const Icon(Icons.download,
+                        color: AppColors.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Text('${ctx.l10n.saveToLocalStorage} (PDF)'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'share_pdf',
+                child: Row(
+                  children: [
+                    const Icon(Icons.share, color: AppColors.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Text('${ctx.l10n.shareSendReport} (PDF)'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'download_excel',
+                child: Row(
+                  children: [
+                    const Icon(Icons.grid_on,
+                        color: AppColors.success, size: 20),
+                    const SizedBox(width: 8),
+                    Text('${ctx.l10n.saveToLocalStorage} (Excel)'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'share_excel',
+                child: Row(
+                  children: [
+                    const Icon(Icons.share, color: AppColors.success, size: 20),
+                    const SizedBox(width: 8),
+                    Text('${ctx.l10n.shareSendReport} (Excel)'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
         bottom: PreferredSize(
@@ -591,7 +744,7 @@ class _LedgerEntryCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            entry.walletName ?? 'No Wallet',
+                            entry.walletName ?? context.l10n.wallets,
                             style: Theme.of(context).textTheme.bodySmall,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

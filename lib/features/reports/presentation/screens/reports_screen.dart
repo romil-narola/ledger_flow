@@ -24,7 +24,39 @@ class _ReportsScreenState extends State<ReportsScreen> {
   DateTime? _toDate;
   bool _isExporting = false;
 
+  CustomerEntity? _selectedCustomer;
+  SupplierEntity? _selectedSupplier;
+  WalletAccountEntity? _selectedWallet;
+
+  List<CustomerEntity> _customers = [];
+  List<SupplierEntity> _suppliers = [];
+  List<WalletAccountEntity> _wallets = [];
+
   final List<ReportType> _reportTypes = ReportType.values;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEntities();
+  }
+
+  Future<void> _loadEntities() async {
+    try {
+      final customerRepo = sl<CustomerRepository>();
+      final supplierRepo = sl<SupplierRepository>();
+      final walletRepo = sl<WalletRepository>();
+
+      final customers = await customerRepo.getCustomers();
+      final suppliers = await supplierRepo.getSuppliers();
+      final wallets = await walletRepo.getWallets();
+
+      setState(() {
+        _customers = customers;
+        _suppliers = suppliers;
+        _wallets = wallets;
+      });
+    } catch (_) {}
+  }
 
   Future<void> _exportReport({required bool saveLocally}) async {
     final l10n = context.l10n;
@@ -39,6 +71,28 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final customerRepo = sl<CustomerRepository>();
       final ledgerRepo = sl<LedgerRepository>();
 
+      final allWallets = await walletRepo.getWallets();
+      final totalAvailableBalance = await walletRepo.getTotalBalance();
+      final openingBalance =
+          allWallets.fold(0.0, (sum, w) => sum + w.openingBalance);
+
+      final salesList =
+          await customerRepo.getAllSales(from: _fromDate, to: _toDate);
+      final purchasesList =
+          await supplierRepo.getAllPurchases(from: _fromDate, to: _toDate);
+      final cPaymentsList =
+          await customerRepo.getAllPayments(from: _fromDate, to: _toDate);
+      final sPaymentsList =
+          await supplierRepo.getAllPayments(from: _fromDate, to: _toDate);
+
+      final totalSalesVal = salesList.fold(0.0, (sum, s) => sum + s.amount);
+      final totalPurchasesVal =
+          purchasesList.fold(0.0, (sum, p) => sum + p.amount);
+      final customerPayoutsVal =
+          cPaymentsList.fold(0.0, (sum, p) => sum + p.amount);
+      final supplierPayoutsVal =
+          sPaymentsList.fold(0.0, (sum, p) => sum + p.amount);
+
       dynamic file;
 
       switch (_selectedReportType) {
@@ -51,30 +105,67 @@ class _ReportsScreenState extends State<ReportsScreen> {
               title: l10n.generalLedgerReport,
               subtitle: dateSubtitle,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              totalSales: totalSalesVal,
+              totalPurchases: totalPurchasesVal,
+              customerPayouts: customerPayoutsVal,
+              supplierPayouts: supplierPayoutsVal,
             );
           } else {
             file = await ExcelExportService.exportLedger(
               entries: entries,
               sheetName: l10n.ledger,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              totalSales: totalSalesVal,
+              totalPurchases: totalPurchasesVal,
+              customerPayouts: customerPayoutsVal,
+              supplierPayouts: supplierPayoutsVal,
             );
           }
           break;
 
         case ReportType.supplierOutstanding:
-          final suppliers = await supplierRepo.getSuppliersWithOutstanding();
-          if (_selectedFormat == ExportFormat.pdf) {
-            file = await PdfExportService.generateOutstandingReport(
-              suppliers: suppliers,
-              customers: [],
-              l10n: l10n,
-            );
+          if (_selectedSupplier != null) {
+            // Detailed Supplier Report
+            final entries =
+                await supplierRepo.getSupplierLedger(_selectedSupplier!.id);
+            if (_selectedFormat == ExportFormat.pdf) {
+              file = await PdfExportService.generateSupplierLedgerReport(
+                supplier: _selectedSupplier!,
+                entries: entries,
+                l10n: l10n,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            } else {
+              file = await ExcelExportService.exportSupplierLedger(
+                supplier: _selectedSupplier!,
+                entries: entries,
+                l10n: l10n,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            }
           } else {
-            file = await ExcelExportService.exportOutstanding(
-              suppliers: suppliers,
-              customers: [],
-              l10n: l10n,
-            );
+            final suppliers = await supplierRepo.getSuppliersWithOutstanding();
+            if (_selectedFormat == ExportFormat.pdf) {
+              file = await PdfExportService.generateOutstandingReport(
+                suppliers: suppliers,
+                customers: [],
+                l10n: l10n,
+                openingBalance: openingBalance,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            } else {
+              file = await ExcelExportService.exportOutstanding(
+                suppliers: suppliers,
+                customers: [],
+                l10n: l10n,
+                openingBalance: openingBalance,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            }
           }
           break;
 
@@ -85,30 +176,59 @@ class _ReportsScreenState extends State<ReportsScreen> {
               suppliers: suppliers,
               customers: [],
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
             );
           } else {
             file = await ExcelExportService.exportOutstanding(
               suppliers: suppliers,
               customers: [],
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
             );
           }
           break;
 
         case ReportType.customerOutstanding:
-          final customers = await customerRepo.getCustomersWithOutstanding();
-          if (_selectedFormat == ExportFormat.pdf) {
-            file = await PdfExportService.generateOutstandingReport(
-              suppliers: [],
-              customers: customers,
-              l10n: l10n,
-            );
+          if (_selectedCustomer != null) {
+            // Detailed Customer Report
+            final entries =
+                await customerRepo.getCustomerLedger(_selectedCustomer!.id);
+            if (_selectedFormat == ExportFormat.pdf) {
+              file = await PdfExportService.generateCustomerLedgerReport(
+                customer: _selectedCustomer!,
+                entries: entries,
+                l10n: l10n,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            } else {
+              file = await ExcelExportService.exportCustomerLedger(
+                customer: _selectedCustomer!,
+                entries: entries,
+                l10n: l10n,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            }
           } else {
-            file = await ExcelExportService.exportOutstanding(
-              suppliers: [],
-              customers: customers,
-              l10n: l10n,
-            );
+            final customers = await customerRepo.getCustomersWithOutstanding();
+            if (_selectedFormat == ExportFormat.pdf) {
+              file = await PdfExportService.generateOutstandingReport(
+                suppliers: [],
+                customers: customers,
+                l10n: l10n,
+                openingBalance: openingBalance,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            } else {
+              file = await ExcelExportService.exportOutstanding(
+                suppliers: [],
+                customers: customers,
+                l10n: l10n,
+                openingBalance: openingBalance,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            }
           }
           break;
 
@@ -119,58 +239,99 @@ class _ReportsScreenState extends State<ReportsScreen> {
               suppliers: [],
               customers: customers,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
             );
           } else {
             file = await ExcelExportService.exportOutstanding(
               suppliers: [],
               customers: customers,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
             );
           }
           break;
 
         case ReportType.walletReport:
-          final wallets = await walletRepo.getWallets();
-          if (_selectedFormat == ExportFormat.pdf) {
-            file = await PdfExportService.generateWalletReport(
-                wallets: wallets, l10n: l10n);
+          if (_selectedWallet != null) {
+            // Detailed Wallet Report
+            final history = await walletRepo.getWalletHistory(
+                walletId: _selectedWallet!.id);
+            if (_selectedFormat == ExportFormat.pdf) {
+              file = await PdfExportService.generateSingleWalletReport(
+                wallet: _selectedWallet!,
+                transactions: history,
+                l10n: l10n,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            } else {
+              final entries = history
+                  .map((h) => LedgerEntryEntity(
+                        id: h.id,
+                        referenceNumber: h.referenceNumber,
+                        transactionType: TransactionType.walletAdjustment,
+                        debit: h.debit,
+                        credit: h.credit,
+                        walletBalance: h.balance,
+                        description: h.description,
+                        date: h.date,
+                        createdAt: h.date,
+                      ))
+                  .toList();
+              file = await ExcelExportService.exportLedger(
+                entries: entries,
+                sheetName: _selectedWallet!.name,
+                l10n: l10n,
+                openingBalance: _selectedWallet!.openingBalance,
+                totalAvailableBalance: _selectedWallet!.currentBalance,
+              );
+            }
           } else {
-            file = await ExcelExportService.exportWallets(
-                wallets: wallets, l10n: l10n);
+            if (_selectedFormat == ExportFormat.pdf) {
+              file = await PdfExportService.generateWalletReport(
+                wallets: allWallets,
+                l10n: l10n,
+                openingBalance: openingBalance,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            } else {
+              file = await ExcelExportService.exportWallets(
+                wallets: allWallets,
+                l10n: l10n,
+                openingBalance: openingBalance,
+                totalAvailableBalance: totalAvailableBalance,
+              );
+            }
           }
           break;
 
         case ReportType.purchaseReport:
           final purchases =
               await supplierRepo.getAllPurchases(from: _fromDate, to: _toDate);
-          final entries = purchases
-              .map((p) => LedgerEntryEntity(
-                    id: p.id,
-                    referenceNumber: p.referenceNumber,
-                    transactionType: TransactionType.purchase,
-                    supplierName: p.supplierName,
-                    debit: p.amount,
-                    credit: 0.0,
-                    walletBalance: 0.0,
-                    description:
-                        p.notes ?? '${l10n.purchase} (${p.supplierName})',
-                    date: p.date,
-                    createdAt: p.createdAt,
-                  ))
-              .toList();
+          final supplierPhoneMap = {for (var s in _suppliers) s.id: s.phone};
+          final supplierNameMap = {for (var s in _suppliers) s.id: s.name};
 
           if (_selectedFormat == ExportFormat.pdf) {
-            file = await PdfExportService.generateLedgerReport(
-              entries: entries,
-              title: l10n.purchaseReport,
+            file = await PdfExportService.generatePurchaseReport(
+              purchases: purchases,
+              supplierPhones: supplierPhoneMap,
+              supplierNames: supplierNameMap,
               subtitle: dateSubtitle,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              supplierPayouts: supplierPayoutsVal,
             );
           } else {
-            file = await ExcelExportService.exportLedger(
-              entries: entries,
-              sheetName: l10n.purchaseReport,
+            file = await ExcelExportService.exportPurchaseReport(
+              purchases: purchases,
+              supplierPhones: supplierPhoneMap,
+              supplierNames: supplierNameMap,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              supplierPayouts: supplierPayoutsVal,
             );
           }
           break;
@@ -178,33 +339,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
         case ReportType.salesReport:
           final sales =
               await customerRepo.getAllSales(from: _fromDate, to: _toDate);
-          final entries = sales
-              .map((s) => LedgerEntryEntity(
-                    id: s.id,
-                    referenceNumber: s.referenceNumber,
-                    transactionType: TransactionType.sale,
-                    customerName: s.customerName,
-                    debit: 0.0,
-                    credit: s.amount,
-                    walletBalance: 0.0,
-                    description: s.notes ?? '${l10n.sale} (${s.customerName})',
-                    date: s.date,
-                    createdAt: s.createdAt,
-                  ))
-              .toList();
+          final customerPhoneMap = {for (var c in _customers) c.id: c.phone};
+          final customerNameMap = {for (var c in _customers) c.id: c.name};
 
           if (_selectedFormat == ExportFormat.pdf) {
-            file = await PdfExportService.generateLedgerReport(
-              entries: entries,
-              title: l10n.salesReport,
+            file = await PdfExportService.generateSalesReport(
+              sales: sales,
+              customerPhones: customerPhoneMap,
+              customerNames: customerNameMap,
               subtitle: dateSubtitle,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              customerPayouts: customerPayoutsVal,
             );
           } else {
-            file = await ExcelExportService.exportLedger(
-              entries: entries,
-              sheetName: l10n.salesReport,
+            file = await ExcelExportService.exportSalesReport(
+              sales: sales,
+              customerPhones: customerPhoneMap,
+              customerNames: customerNameMap,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              customerPayouts: customerPayoutsVal,
             );
           }
           break;
@@ -214,13 +371,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
               await supplierRepo.getAllPayments(from: _fromDate, to: _toDate);
           final cPayments =
               await customerRepo.getAllPayments(from: _fromDate, to: _toDate);
+          final sPhoneMap = {for (var s in _suppliers) s.id: s.phone};
+          final cPhoneMap = {for (var c in _customers) c.id: c.phone};
 
           final List<LedgerEntryEntity> entries = [
             ...sPayments.map((p) => LedgerEntryEntity(
                   id: p.id,
                   referenceNumber: p.referenceNumber,
                   transactionType: TransactionType.supplierPayment,
+                  supplierId: p.supplierId,
                   supplierName: p.supplierName,
+                  supplierPhone: sPhoneMap[p.supplierId],
                   debit: p.amount,
                   credit: 0.0,
                   walletBalance: 0.0,
@@ -232,7 +393,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   id: p.id,
                   referenceNumber: p.referenceNumber,
                   transactionType: TransactionType.customerPayment,
+                  customerId: p.customerId,
                   customerName: p.customerName,
+                  customerPhone: cPhoneMap[p.customerId],
                   debit: 0.0,
                   credit: p.amount,
                   walletBalance: 0.0,
@@ -248,12 +411,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
               title: l10n.paymentsReport,
               subtitle: dateSubtitle,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              customerPayouts: customerPayoutsVal,
+              supplierPayouts: supplierPayoutsVal,
             );
           } else {
             file = await ExcelExportService.exportLedger(
               entries: entries,
               sheetName: l10n.paymentsReport,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              customerPayouts: customerPayoutsVal,
+              supplierPayouts: supplierPayoutsVal,
             );
           }
           break;
@@ -270,12 +441,24 @@ class _ReportsScreenState extends State<ReportsScreen> {
               title: l10n.monthlySummaryReport,
               subtitle: l10n.last30Days,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              totalSales: totalSalesVal,
+              totalPurchases: totalPurchasesVal,
+              customerPayouts: customerPayoutsVal,
+              supplierPayouts: supplierPayoutsVal,
             );
           } else {
             file = await ExcelExportService.exportLedger(
               entries: entries,
               sheetName: l10n.monthlySummaryReport,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              totalSales: totalSalesVal,
+              totalPurchases: totalPurchasesVal,
+              customerPayouts: customerPayoutsVal,
+              supplierPayouts: supplierPayoutsVal,
             );
           }
           break;
@@ -297,6 +480,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
               from: _fromDate,
               to: _toDate,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              customerPayouts: customerPayoutsVal,
+              supplierPayouts: supplierPayoutsVal,
             );
           } else {
             file = await ExcelExportService.exportProfitLoss(
@@ -305,6 +492,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
               from: _fromDate,
               to: _toDate,
               l10n: l10n,
+              openingBalance: openingBalance,
+              totalAvailableBalance: totalAvailableBalance,
+              customerPayouts: customerPayoutsVal,
+              supplierPayouts: supplierPayoutsVal,
             );
           }
           break;
@@ -460,11 +651,110 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   }).toList(),
                   onChanged: (val) {
                     if (val != null) {
-                      setState(() => _selectedReportType = val);
+                      setState(() {
+                        _selectedReportType = val;
+                        _selectedCustomer = null;
+                        _selectedSupplier = null;
+                        _selectedWallet = null;
+                      });
                     }
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
+
+                // Optional Customer Selector
+                if (_selectedReportType == ReportType.customerOutstanding &&
+                    _customers.isNotEmpty) ...[
+                  Text(context.l10n.customer,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<CustomerEntity?>(
+                    initialValue: _selectedCustomer,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.person_outlined),
+                      hintText: context.l10n.allTypes,
+                    ),
+                    items: [
+                      DropdownMenuItem<CustomerEntity?>(
+                        value: null,
+                        child: Text(
+                            '${context.l10n.allTypes} (${context.l10n.customers})'),
+                      ),
+                      ..._customers.map((c) => DropdownMenuItem(
+                            value: c,
+                            child: Text(c.name),
+                          )),
+                    ],
+                    onChanged: (val) => setState(() => _selectedCustomer = val),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Optional Supplier Selector
+                if (_selectedReportType == ReportType.supplierOutstanding &&
+                    _suppliers.isNotEmpty) ...[
+                  Text(context.l10n.supplier,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<SupplierEntity?>(
+                    initialValue: _selectedSupplier,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.storefront_outlined),
+                      hintText: context.l10n.allTypes,
+                    ),
+                    items: [
+                      DropdownMenuItem<SupplierEntity?>(
+                        value: null,
+                        child: Text(
+                            '${context.l10n.allTypes} (${context.l10n.suppliers})'),
+                      ),
+                      ..._suppliers.map((s) => DropdownMenuItem(
+                            value: s,
+                            child: Text(s.name),
+                          )),
+                    ],
+                    onChanged: (val) => setState(() => _selectedSupplier = val),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Optional Wallet Selector
+                if (_selectedReportType == ReportType.walletReport &&
+                    _wallets.isNotEmpty) ...[
+                  Text(context.l10n.wallets,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<WalletAccountEntity?>(
+                    initialValue: _selectedWallet,
+                    decoration: InputDecoration(
+                      prefixIcon:
+                          const Icon(Icons.account_balance_wallet_outlined),
+                      hintText: context.l10n.allTypes,
+                    ),
+                    items: [
+                      DropdownMenuItem<WalletAccountEntity?>(
+                        value: null,
+                        child: Text(
+                            '${context.l10n.allTypes} (${context.l10n.wallets})'),
+                      ),
+                      ..._wallets.map((w) => DropdownMenuItem(
+                            value: w,
+                            child: Text(w.name),
+                          )),
+                    ],
+                    onChanged: (val) => setState(() => _selectedWallet = val),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Format Selector
                 Text(context.l10n.selectFormat,

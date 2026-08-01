@@ -221,15 +221,30 @@ class CustomerRepositoryImpl implements CustomerRepository {
         advanceBalance: currentAdvanceBalance,
       );
 
+      // Resolve target wallet account and balance for sale ledger entry
+      int? targetWalletId = walletAccountId;
+      double saleWalletBalance = 0.0;
+      if (targetWalletId != null) {
+        final w = await _walletDao.getWalletById(targetWalletId);
+        saleWalletBalance = w?.currentBalance ?? 0.0;
+      } else {
+        final wallets = await _walletDao.getAllWallets();
+        if (wallets.isNotEmpty) {
+          targetWalletId = wallets.first.id;
+          saleWalletBalance = wallets.first.currentBalance;
+        }
+      }
+
       // Ledger entry for Sale
       await _ledgerDao.insertEntry(LedgerEntriesCompanion.insert(
         referenceNumber: ref,
         transactionType: TransactionType.sale.name,
+        walletAccountId: Value(targetWalletId),
         customerId: Value(customerId),
         relatedTransactionId: Value(saleId),
         debit: const Value(0.0),
         credit: Value(amount),
-        walletBalance: const Value(0.0), // No wallet involved directly in sale
+        walletBalance: Value(saleWalletBalance),
         description: advanceApplied > 0
             ? 'Sale to ${customer.name} (Advance applied: ₹${advanceApplied.toStringAsFixed(2)})'
             : 'Sale to ${customer.name}',
@@ -350,20 +365,23 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<List<SaleEntity>> getAllSales({DateTime? from, DateTime? to}) async {
     final allSales = await _customerDao.getAllSales(from: from, to: to);
-    return allSales
-        .map((s) => SaleEntity(
-              id: s.id,
-              referenceNumber: s.referenceNumber,
-              customerId: s.customerId,
-              customerName: '',
-              amount: s.amount,
-              advanceApplied: s.advanceApplied,
-              netAmount: s.netAmount,
-              notes: s.notes,
-              date: s.date,
-              createdAt: s.createdAt,
-            ))
-        .toList();
+    final results = <SaleEntity>[];
+    for (final s in allSales) {
+      final customer = await _customerDao.getCustomerById(s.customerId);
+      results.add(SaleEntity(
+        id: s.id,
+        referenceNumber: s.referenceNumber,
+        customerId: s.customerId,
+        customerName: customer?.name ?? '',
+        amount: s.amount,
+        advanceApplied: s.advanceApplied,
+        netAmount: s.netAmount,
+        notes: s.notes,
+        date: s.date,
+        createdAt: s.createdAt,
+      ));
+    }
+    return results;
   }
 
   @override
@@ -375,22 +393,25 @@ class CustomerRepositoryImpl implements CustomerRepository {
       int customerId) async {
     final payments = await _customerDao.getPaymentsByCustomer(customerId);
     final customer = await _customerDao.getCustomerById(customerId);
-    return payments
-        .map((p) => CustomerPaymentEntity(
-              id: p.id,
-              referenceNumber: p.referenceNumber,
-              customerId: p.customerId,
-              customerName: customer?.name ?? '',
-              walletAccountId: p.walletAccountId,
-              walletName: '',
-              amount: p.amount,
-              outstandingSettled: p.outstandingSettled,
-              advanceGenerated: p.advanceGenerated,
-              notes: p.notes,
-              date: p.date,
-              createdAt: p.createdAt,
-            ))
-        .toList();
+    final results = <CustomerPaymentEntity>[];
+    for (final p in payments) {
+      final wallet = await _walletDao.getWalletById(p.walletAccountId);
+      results.add(CustomerPaymentEntity(
+        id: p.id,
+        referenceNumber: p.referenceNumber,
+        customerId: p.customerId,
+        customerName: customer?.name ?? '',
+        walletAccountId: p.walletAccountId,
+        walletName: wallet?.name ?? '',
+        amount: p.amount,
+        outstandingSettled: p.outstandingSettled,
+        advanceGenerated: p.advanceGenerated,
+        notes: p.notes,
+        date: p.date,
+        createdAt: p.createdAt,
+      ));
+    }
+    return results;
   }
 
   @override
@@ -398,22 +419,26 @@ class CustomerRepositoryImpl implements CustomerRepository {
       {DateTime? from, DateTime? to}) async {
     final payments =
         await _customerDao.getAllCustomerPayments(from: from, to: to);
-    return payments
-        .map((p) => CustomerPaymentEntity(
-              id: p.id,
-              referenceNumber: p.referenceNumber,
-              customerId: p.customerId,
-              customerName: '',
-              walletAccountId: p.walletAccountId,
-              walletName: '',
-              amount: p.amount,
-              outstandingSettled: p.outstandingSettled,
-              advanceGenerated: p.advanceGenerated,
-              notes: p.notes,
-              date: p.date,
-              createdAt: p.createdAt,
-            ))
-        .toList();
+    final results = <CustomerPaymentEntity>[];
+    for (final p in payments) {
+      final customer = await _customerDao.getCustomerById(p.customerId);
+      final wallet = await _walletDao.getWalletById(p.walletAccountId);
+      results.add(CustomerPaymentEntity(
+        id: p.id,
+        referenceNumber: p.referenceNumber,
+        customerId: p.customerId,
+        customerName: customer?.name ?? '',
+        walletAccountId: p.walletAccountId,
+        walletName: wallet?.name ?? '',
+        amount: p.amount,
+        outstandingSettled: p.outstandingSettled,
+        advanceGenerated: p.advanceGenerated,
+        notes: p.notes,
+        date: p.date,
+        createdAt: p.createdAt,
+      ));
+    }
+    return results;
   }
 
   @override

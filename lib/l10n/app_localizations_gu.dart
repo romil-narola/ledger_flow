@@ -228,7 +228,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get dateTime => 'તારીખ અને સમય';
 
   @override
-  String get walletAccount => 'વોલેટ ખાતું';
+  String get walletAccount => 'વોલેટ એકાઉન્ટ';
 
   @override
   String get walletBalanceAfter => 'આ પછી વોલેટ સિલક';
@@ -911,4 +911,19 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get noDescription => 'કોઈ વર્ણન નથી';
+
+  @override
+  String get openingBalance => 'શરૂઆતનું બેલેન્સ';
+
+  @override
+  String get totalAvailableBalance => 'કુલ ઉપલબ્ધ બેલેન્સ';
+
+  @override
+  String get customerPayouts => 'ગ્રાહક પેઆઉટ (મળેલ)';
+
+  @override
+  String get supplierPayouts => 'સપ્લાયર પેઆઉટ (ચૂકવેલ)';
+
+  @override
+  String get partyName => 'પક્ષનું નામ';
 }

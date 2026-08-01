@@ -1881,6 +1881,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No description'**
   String get noDescription;
+
+  /// No description provided for @openingBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening Balance'**
+  String get openingBalance;
+
+  /// No description provided for @totalAvailableBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Available Balance'**
+  String get totalAvailableBalance;
+
+  /// No description provided for @customerPayouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Payouts (Received)'**
+  String get customerPayouts;
+
+  /// No description provided for @supplierPayouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier Payouts (Paid)'**
+  String get supplierPayouts;
+
+  /// No description provided for @partyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Party Name'**
+  String get partyName;
 }
 
 class _AppLocalizationsDelegate

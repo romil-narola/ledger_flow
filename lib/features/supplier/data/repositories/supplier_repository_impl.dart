@@ -363,44 +363,51 @@ class SupplierRepositoryImpl implements SupplierRepository {
   Future<List<PurchaseEntity>> getPurchasesBySupplier(int supplierId) async {
     final purchases = await _supplierDao.getPurchasesBySupplier(supplierId);
     final supplier = await _supplierDao.getSupplierById(supplierId);
-    return purchases
-        .map((p) => PurchaseEntity(
-              id: p.id,
-              referenceNumber: p.referenceNumber,
-              supplierId: p.supplierId,
-              supplierName: supplier?.name ?? '',
-              walletAccountId: p.walletAccountId,
-              walletName: '',
-              amount: p.amount,
-              creditApplied: p.creditApplied,
-              netAmount: p.netAmount,
-              notes: p.notes,
-              date: p.date,
-              createdAt: p.createdAt,
-            ))
-        .toList();
+    final results = <PurchaseEntity>[];
+    for (final p in purchases) {
+      final wallet = await _walletDao.getWalletById(p.walletAccountId);
+      results.add(PurchaseEntity(
+        id: p.id,
+        referenceNumber: p.referenceNumber,
+        supplierId: p.supplierId,
+        supplierName: supplier?.name ?? '',
+        walletAccountId: p.walletAccountId,
+        walletName: wallet?.name ?? '',
+        amount: p.amount,
+        creditApplied: p.creditApplied,
+        netAmount: p.netAmount,
+        notes: p.notes,
+        date: p.date,
+        createdAt: p.createdAt,
+      ));
+    }
+    return results;
   }
 
   @override
   Future<List<PurchaseEntity>> getAllPurchases(
       {DateTime? from, DateTime? to}) async {
     final allPurchases = await _supplierDao.getAllPurchases(from: from, to: to);
-    return allPurchases
-        .map((p) => PurchaseEntity(
-              id: p.id,
-              referenceNumber: p.referenceNumber,
-              supplierId: p.supplierId,
-              supplierName: '',
-              walletAccountId: p.walletAccountId,
-              walletName: '',
-              amount: p.amount,
-              creditApplied: p.creditApplied,
-              netAmount: p.netAmount,
-              notes: p.notes,
-              date: p.date,
-              createdAt: p.createdAt,
-            ))
-        .toList();
+    final results = <PurchaseEntity>[];
+    for (final p in allPurchases) {
+      final supplier = await _supplierDao.getSupplierById(p.supplierId);
+      final wallet = await _walletDao.getWalletById(p.walletAccountId);
+      results.add(PurchaseEntity(
+        id: p.id,
+        referenceNumber: p.referenceNumber,
+        supplierId: p.supplierId,
+        supplierName: supplier?.name ?? '',
+        walletAccountId: p.walletAccountId,
+        walletName: wallet?.name ?? '',
+        amount: p.amount,
+        creditApplied: p.creditApplied,
+        netAmount: p.netAmount,
+        notes: p.notes,
+        date: p.date,
+        createdAt: p.createdAt,
+      ));
+    }
+    return results;
   }
 
   @override
@@ -412,22 +419,25 @@ class SupplierRepositoryImpl implements SupplierRepository {
       int supplierId) async {
     final payments = await _supplierDao.getPaymentsBySupplier(supplierId);
     final supplier = await _supplierDao.getSupplierById(supplierId);
-    return payments
-        .map((p) => SupplierPaymentEntity(
-              id: p.id,
-              referenceNumber: p.referenceNumber,
-              supplierId: p.supplierId,
-              supplierName: supplier?.name ?? '',
-              walletAccountId: p.walletAccountId,
-              walletName: '',
-              amount: p.amount,
-              outstandingSettled: p.outstandingSettled,
-              creditGenerated: p.creditGenerated,
-              notes: p.notes,
-              date: p.date,
-              createdAt: p.createdAt,
-            ))
-        .toList();
+    final results = <SupplierPaymentEntity>[];
+    for (final p in payments) {
+      final wallet = await _walletDao.getWalletById(p.walletAccountId);
+      results.add(SupplierPaymentEntity(
+        id: p.id,
+        referenceNumber: p.referenceNumber,
+        supplierId: p.supplierId,
+        supplierName: supplier?.name ?? '',
+        walletAccountId: p.walletAccountId,
+        walletName: wallet?.name ?? '',
+        amount: p.amount,
+        outstandingSettled: p.outstandingSettled,
+        creditGenerated: p.creditGenerated,
+        notes: p.notes,
+        date: p.date,
+        createdAt: p.createdAt,
+      ));
+    }
+    return results;
   }
 
   @override
@@ -435,22 +445,26 @@ class SupplierRepositoryImpl implements SupplierRepository {
       {DateTime? from, DateTime? to}) async {
     final payments =
         await _supplierDao.getAllSupplierPayments(from: from, to: to);
-    return payments
-        .map((p) => SupplierPaymentEntity(
-              id: p.id,
-              referenceNumber: p.referenceNumber,
-              supplierId: p.supplierId,
-              supplierName: '',
-              walletAccountId: p.walletAccountId,
-              walletName: '',
-              amount: p.amount,
-              outstandingSettled: p.outstandingSettled,
-              creditGenerated: p.creditGenerated,
-              notes: p.notes,
-              date: p.date,
-              createdAt: p.createdAt,
-            ))
-        .toList();
+    final results = <SupplierPaymentEntity>[];
+    for (final p in payments) {
+      final supplier = await _supplierDao.getSupplierById(p.supplierId);
+      final wallet = await _walletDao.getWalletById(p.walletAccountId);
+      results.add(SupplierPaymentEntity(
+        id: p.id,
+        referenceNumber: p.referenceNumber,
+        supplierId: p.supplierId,
+        supplierName: supplier?.name ?? '',
+        walletAccountId: p.walletAccountId,
+        walletName: wallet?.name ?? '',
+        amount: p.amount,
+        outstandingSettled: p.outstandingSettled,
+        creditGenerated: p.creditGenerated,
+        notes: p.notes,
+        date: p.date,
+        createdAt: p.createdAt,
+      ));
+    }
+    return results;
   }
 
   @override

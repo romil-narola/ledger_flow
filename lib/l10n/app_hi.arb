@@ -305,5 +305,11 @@
   "businessName": "व्यापार का नाम",
   "descriptionOptional": "विवरण (वैकल्पिक)",
   "requiredField": "आवश्यक",
-  "noDescription": "कोई विवरण नहीं"
+  "noDescription": "कोई विवरण नहीं",
+  "openingBalance": "प्रारंभिक शेष",
+  "totalAvailableBalance": "कुल उपलब्ध शेष",
+  "customerPayouts": "ग्राहक पेआउट (प्राप्त)",
+  "supplierPayouts": "सप्लायर पेआउट (भुगतान)",
+  "partyName": "पक्ष का नाम",
+  "walletAccount": "वॉलेट खाता"
 }

@@ -25,19 +25,36 @@ class LedgerRepositoryImpl implements LedgerRepository {
   Future<LedgerEntryEntity> _mapEntry(LedgerEntry e) async {
     String? walletName;
     String? supplierName;
+    String? supplierPhone;
     String? customerName;
+    String? customerPhone;
+    double calculatedWalletBalance = e.walletBalance;
 
     if (e.walletAccountId != null) {
       final wallet = await _walletDao.getWalletById(e.walletAccountId!);
       walletName = wallet?.name;
+      if (calculatedWalletBalance == 0.0 && wallet != null) {
+        calculatedWalletBalance = wallet.currentBalance;
+      }
+    } else {
+      final wallets = await _walletDao.getAllWallets();
+      if (wallets.isNotEmpty) {
+        walletName = wallets.first.name;
+        if (calculatedWalletBalance == 0.0) {
+          calculatedWalletBalance = wallets.first.currentBalance;
+        }
+      }
     }
+
     if (e.supplierId != null) {
       final supplier = await _supplierDao.getSupplierById(e.supplierId!);
       supplierName = supplier?.name;
+      supplierPhone = supplier?.phone;
     }
     if (e.customerId != null) {
       final customer = await _customerDao.getCustomerById(e.customerId!);
       customerName = customer?.name;
+      customerPhone = customer?.phone;
     }
 
     return LedgerEntryEntity(
@@ -51,11 +68,13 @@ class LedgerRepositoryImpl implements LedgerRepository {
       walletName: walletName,
       supplierId: e.supplierId,
       supplierName: supplierName,
+      supplierPhone: supplierPhone,
       customerId: e.customerId,
       customerName: customerName,
+      customerPhone: customerPhone,
       debit: e.debit,
       credit: e.credit,
-      walletBalance: e.walletBalance,
+      walletBalance: calculatedWalletBalance,
       description: e.description,
       date: e.date,
       createdAt: e.createdAt,

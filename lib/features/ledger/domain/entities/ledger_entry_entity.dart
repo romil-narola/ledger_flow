@@ -10,8 +10,10 @@ class LedgerEntryEntity extends Equatable {
   final String? walletName;
   final int? supplierId;
   final String? supplierName;
+  final String? supplierPhone;
   final int? customerId;
   final String? customerName;
+  final String? customerPhone;
   final double debit;
   final double credit;
   final double walletBalance;
@@ -27,8 +29,10 @@ class LedgerEntryEntity extends Equatable {
     this.walletName,
     this.supplierId,
     this.supplierName,
+    this.supplierPhone,
     this.customerId,
     this.customerName,
+    this.customerPhone,
     required this.debit,
     required this.credit,
     required this.walletBalance,
@@ -42,4 +46,5 @@ class LedgerEntryEntity extends Equatable {
 
   double get netAmount => credit - debit;
   bool get isCredit => credit > debit;
+  String? get partyPhone => customerPhone ?? supplierPhone;
 }

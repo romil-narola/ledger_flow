@@ -61,18 +61,26 @@ class WalletRepositoryImpl implements WalletRepository {
       from: from,
       to: to,
     );
-    return entries
-        .map((e) => WalletTransactionItem(
-              id: e.id,
-              referenceNumber: e.referenceNumber,
-              transactionType: e.transactionType,
-              description: e.description,
-              debit: e.debit,
-              credit: e.credit,
-              balance: e.walletBalance,
-              date: e.date,
-            ))
-        .toList();
+    return entries.map((e) {
+      String? party;
+      final match = RegExp(r'\(([^)]+)\)').firstMatch(e.description);
+      if (match != null &&
+          match.group(1) != null &&
+          match.group(1)!.trim().isNotEmpty) {
+        party = match.group(1)!.trim();
+      }
+      return WalletTransactionItem(
+        id: e.id,
+        referenceNumber: e.referenceNumber,
+        transactionType: e.transactionType,
+        description: e.description,
+        debit: e.debit,
+        credit: e.credit,
+        balance: e.walletBalance,
+        date: e.date,
+        customerName: party,
+      );
+    }).toList();
   }
 
   // ─── Write Operations ────────────────────────────────────────────

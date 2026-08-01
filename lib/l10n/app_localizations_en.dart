@@ -910,4 +910,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noDescription => 'No description';
+
+  @override
+  String get openingBalance => 'Opening Balance';
+
+  @override
+  String get totalAvailableBalance => 'Total Available Balance';
+
+  @override
+  String get customerPayouts => 'Customer Payouts (Received)';
+
+  @override
+  String get supplierPayouts => 'Supplier Payouts (Paid)';
+
+  @override
+  String get partyName => 'Party Name';
 }

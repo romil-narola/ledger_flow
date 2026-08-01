@@ -917,4 +917,19 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get noDescription => 'कोई विवरण नहीं';
+
+  @override
+  String get openingBalance => 'प्रारंभिक शेष';
+
+  @override
+  String get totalAvailableBalance => 'कुल उपलब्ध शेष';
+
+  @override
+  String get customerPayouts => 'ग्राहक पेआउट (प्राप्त)';
+
+  @override
+  String get supplierPayouts => 'सप्लायर पेआउट (भुगतान)';
+
+  @override
+  String get partyName => 'पक्ष का नाम';
 }

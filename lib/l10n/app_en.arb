@@ -305,5 +305,11 @@
   "businessName": "Business Name",
   "descriptionOptional": "Description (Optional)",
   "requiredField": "Required",
-  "noDescription": "No description"
+  "noDescription": "No description",
+  "openingBalance": "Opening Balance",
+  "totalAvailableBalance": "Total Available Balance",
+  "customerPayouts": "Customer Payouts (Received)",
+  "supplierPayouts": "Supplier Payouts (Paid)",
+  "partyName": "Party Name",
+  "walletAccount": "Wallet Account"
 }

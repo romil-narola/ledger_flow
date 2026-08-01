@@ -305,5 +305,11 @@
   "businessName": "વ્યવસાયનું નામ",
   "descriptionOptional": "વર્ણન (વૈકલ્પિક)",
   "requiredField": "ફરજિયાત છે",
-  "noDescription": "કોઈ વર્ણન નથી"
+  "noDescription": "કોઈ વર્ણન નથી",
+  "openingBalance": "શરૂઆતનું બેલેન્સ",
+  "totalAvailableBalance": "કુલ ઉપલબ્ધ બેલેન્સ",
+  "customerPayouts": "ગ્રાહક પેઆઉટ (મળેલ)",
+  "supplierPayouts": "સપ્લાયર પેઆઉટ (ચૂકવેલ)",
+  "partyName": "પક્ષનું નામ",
+  "walletAccount": "વોલેટ એકાઉન્ટ"
 }
