@@ -104,55 +104,58 @@ class ExcelExportService {
     }
     startRow++; // Blank separator
 
-    // Add Headers including Party Name, Mobile Number & Wallet Account
-    final headers = [
-      l10n.date,
-      l10n.referenceNo,
-      l10n.transactionType,
-      l10n.partyName,
-      l10n.phone,
-      l10n.walletAccount,
-      l10n.description,
-      l10n.debit,
-      l10n.credit,
-      l10n.walletBalanceAfter
-    ];
-    for (var col = 0; col < headers.length; col++) {
-      final cell = sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: col, rowIndex: startRow));
-      cell.value = TextCellValue(headers[col]);
-    }
-    startRow++;
-
-    // Add Row Data
-    for (var row = 0; row < entries.length; row++) {
-      final entry = entries[row];
-      final party = entry.customerName ?? entry.supplierName ?? '-';
-      final phone = entry.partyPhone ?? '-';
-      final wallet = entry.walletName ?? '-';
-
-      final values = [
-        DateFormatter.format(entry.date),
-        entry.referenceNumber,
-        entry.transactionType.label,
-        party,
-        phone,
-        wallet,
-        entry.description,
-        entry.debit,
-        entry.credit,
-        entry.walletBalance,
+    if (entries.isNotEmpty) {
+      // Add Headers including Party Name, Mobile Number & Wallet Account
+      final headers = [
+        l10n.date,
+        l10n.referenceNo,
+        l10n.transactionType,
+        l10n.partyName,
+        l10n.phone,
+        l10n.walletAccount,
+        l10n.description,
+        l10n.debit,
+        l10n.credit,
+        l10n.walletBalanceAfter
       ];
+      for (var col = 0; col < headers.length; col++) {
+        final cell = sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: col, rowIndex: startRow));
+        cell.value = TextCellValue(headers[col]);
+      }
+      startRow++;
 
-      for (var col = 0; col < values.length; col++) {
-        final cell = sheet.cell(CellIndex.indexByColumnRow(
-            columnIndex: col, rowIndex: startRow + row));
-        final val = values[col];
-        if (val is double) {
-          cell.value = DoubleCellValue(val);
-        } else {
-          cell.value = TextCellValue(val.toString());
+      // Add Row Data
+      for (var row = 0; row < entries.length; row++) {
+        final entry = entries[row];
+        final party = entry.customerName ?? entry.supplierName ?? '-';
+        final phone = entry.partyPhone ?? '-';
+        final wallet = entry.walletName ?? '-';
+
+        final values = [
+          DateFormatter.format(entry.date),
+          entry.referenceNumber,
+          entry.transactionType.label,
+          party,
+          phone,
+          wallet,
+          entry.description,
+          entry.debit,
+          entry.credit,
+          entry.walletBalance,
+        ];
+
+        for (var col = 0; col < values.length; col++) {
+          final cell = sheet.cell(CellIndex.indexByColumnRow(
+              columnIndex: col, rowIndex: startRow));
+          final val = values[col];
+          if (val is double) {
+            cell.value = DoubleCellValue(val);
+          } else {
+            cell.value = TextCellValue(val.toString());
+          }
         }
+        startRow++;
       }
     }
 

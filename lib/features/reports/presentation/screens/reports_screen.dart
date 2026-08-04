@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,6 +25,24 @@ class _ReportsScreenState extends State<ReportsScreen> {
   DateTime? _fromDate;
   DateTime? _toDate;
   bool _isExporting = false;
+
+  DateTime get _effectiveFromDate {
+    if (_fromDate != null) {
+      return DateTime(
+          _fromDate!.year, _fromDate!.month, _fromDate!.day, 0, 0, 0, 0);
+    }
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, 1, 0, 0, 0, 0);
+  }
+
+  DateTime get _effectiveToDate {
+    if (_toDate != null) {
+      return DateTime(
+          _toDate!.year, _toDate!.month, _toDate!.day, 23, 59, 59, 999);
+    }
+    final now = DateTime.now();
+    return DateTime(now.year, now.month + 1, 0, 23, 59, 59, 999);
+  }
 
   CustomerEntity? _selectedCustomer;
   SupplierEntity? _selectedSupplier;
@@ -77,17 +96,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final customerRepo = sl<CustomerRepository>();
       final expenseRepo = sl<ExpenseRepository>();
 
+      final from = _effectiveFromDate;
+      final to = _effectiveToDate;
+
       final totalAvailable = await walletRepo.getTotalBalance();
-      final sales =
-          await customerRepo.getAllSales(from: _fromDate, to: _toDate);
-      final purchases =
-          await supplierRepo.getAllPurchases(from: _fromDate, to: _toDate);
-      final cPayments =
-          await customerRepo.getAllPayments(from: _fromDate, to: _toDate);
-      final sPayments =
-          await supplierRepo.getAllPayments(from: _fromDate, to: _toDate);
-      final expenses =
-          await expenseRepo.getAllExpenses(from: _fromDate, to: _toDate);
+      final sales = await customerRepo.getAllSales(from: from, to: to);
+      final purchases = await supplierRepo.getAllPurchases(from: from, to: to);
+      final cPayments = await customerRepo.getAllPayments(from: from, to: to);
+      final sPayments = await supplierRepo.getAllPayments(from: from, to: to);
+      final expenses = await expenseRepo.getAllExpenses(from: from, to: to);
 
       final salesVal = sales.fold(0.0, (sum, s) => sum + s.amount);
       final purchasesVal = purchases.fold(0.0, (sum, p) => sum + p.amount);
@@ -148,14 +165,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final openingBalance =
           allWallets.fold(0.0, (sum, w) => sum + w.openingBalance);
 
-      final salesList =
-          await customerRepo.getAllSales(from: _fromDate, to: _toDate);
+      final from = _effectiveFromDate;
+      final to = _effectiveToDate;
+
+      final salesList = await customerRepo.getAllSales(from: from, to: to);
       final purchasesList =
-          await supplierRepo.getAllPurchases(from: _fromDate, to: _toDate);
+          await supplierRepo.getAllPurchases(from: from, to: to);
       final cPaymentsList =
-          await customerRepo.getAllPayments(from: _fromDate, to: _toDate);
+          await customerRepo.getAllPayments(from: from, to: to);
       final sPaymentsList =
-          await supplierRepo.getAllPayments(from: _fromDate, to: _toDate);
+          await supplierRepo.getAllPayments(from: from, to: to);
 
       final totalSalesVal = salesList.fold(0.0, (sum, s) => sum + s.amount);
       final totalPurchasesVal =
@@ -169,8 +188,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
       switch (_selectedReportType) {
         case ReportType.ledgerReport:
-          final entries = await ledgerRepo.getEntries(
-              from: _fromDate, to: _toDate, limit: 1000);
+          final entries =
+              await ledgerRepo.getEntries(from: from, to: to, limit: 100000);
           if (_selectedFormat == ExportFormat.pdf) {
             file = await PdfExportService.generateLedgerReport(
               entries: entries,
@@ -202,14 +221,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
         case ReportType.supplierOutstanding:
           if (_selectedSupplier != null) {
             // Detailed Supplier Report
-            final entries =
+            var entries =
                 await supplierRepo.getSupplierLedger(_selectedSupplier!.id);
+            entries = entries
+                .where((e) => !e.date.isBefore(from) && !e.date.isAfter(to))
+                .toList();
             if (_selectedFormat == ExportFormat.pdf) {
               file = await PdfExportService.generateSupplierLedgerReport(
                 supplier: _selectedSupplier!,
                 entries: entries,
                 l10n: l10n,
                 totalAvailableBalance: totalAvailableBalance,
+                subtitle: dateSubtitle,
               );
             } else {
               file = await ExcelExportService.exportSupplierLedger(
@@ -228,6 +251,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 l10n: l10n,
                 openingBalance: openingBalance,
                 totalAvailableBalance: totalAvailableBalance,
+                subtitle: dateSubtitle,
               );
             } else {
               file = await ExcelExportService.exportOutstanding(
@@ -250,6 +274,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               l10n: l10n,
               openingBalance: openingBalance,
               totalAvailableBalance: totalAvailableBalance,
+              subtitle: dateSubtitle,
             );
           } else {
             file = await ExcelExportService.exportOutstanding(
@@ -265,14 +290,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
         case ReportType.customerOutstanding:
           if (_selectedCustomer != null) {
             // Detailed Customer Report
-            final entries =
+            var entries =
                 await customerRepo.getCustomerLedger(_selectedCustomer!.id);
+            entries = entries
+                .where((e) => !e.date.isBefore(from) && !e.date.isAfter(to))
+                .toList();
             if (_selectedFormat == ExportFormat.pdf) {
               file = await PdfExportService.generateCustomerLedgerReport(
                 customer: _selectedCustomer!,
                 entries: entries,
                 l10n: l10n,
                 totalAvailableBalance: totalAvailableBalance,
+                subtitle: dateSubtitle,
               );
             } else {
               file = await ExcelExportService.exportCustomerLedger(
@@ -291,6 +320,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 l10n: l10n,
                 openingBalance: openingBalance,
                 totalAvailableBalance: totalAvailableBalance,
+                subtitle: dateSubtitle,
               );
             } else {
               file = await ExcelExportService.exportOutstanding(
@@ -313,6 +343,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               l10n: l10n,
               openingBalance: openingBalance,
               totalAvailableBalance: totalAvailableBalance,
+              subtitle: dateSubtitle,
             );
           } else {
             file = await ExcelExportService.exportOutstanding(
@@ -328,14 +359,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
         case ReportType.walletReport:
           if (_selectedWallet != null) {
             // Detailed Wallet Report
-            final history = await walletRepo.getWalletHistory(
+            var history = await walletRepo.getWalletHistory(
                 walletId: _selectedWallet!.id);
+            history = history
+                .where((h) => !h.date.isBefore(from) && !h.date.isAfter(to))
+                .toList();
             if (_selectedFormat == ExportFormat.pdf) {
               file = await PdfExportService.generateSingleWalletReport(
                 wallet: _selectedWallet!,
                 transactions: history,
                 l10n: l10n,
                 totalAvailableBalance: totalAvailableBalance,
+                subtitle: dateSubtitle,
               );
             } else {
               final entries = history
@@ -366,6 +401,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 l10n: l10n,
                 openingBalance: openingBalance,
                 totalAvailableBalance: totalAvailableBalance,
+                subtitle: dateSubtitle,
               );
             } else {
               file = await ExcelExportService.exportWallets(
@@ -380,7 +416,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
         case ReportType.purchaseReport:
           final purchases =
-              await supplierRepo.getAllPurchases(from: _fromDate, to: _toDate);
+              await supplierRepo.getAllPurchases(from: from, to: to);
           final supplierPhoneMap = {for (var s in _suppliers) s.id: s.phone};
           final supplierNameMap = {for (var s in _suppliers) s.id: s.name};
 
@@ -409,8 +445,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           break;
 
         case ReportType.salesReport:
-          final sales =
-              await customerRepo.getAllSales(from: _fromDate, to: _toDate);
+          final sales = await customerRepo.getAllSales(from: from, to: to);
           final customerPhoneMap = {for (var c in _customers) c.id: c.phone};
           final customerNameMap = {for (var c in _customers) c.id: c.name};
 
@@ -440,8 +475,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
         case ReportType.expenseReport:
           final expenseRepo = sl<ExpenseRepository>();
-          final expenses =
-              await expenseRepo.getAllExpenses(from: _fromDate, to: _toDate);
+          final expenses = await expenseRepo.getAllExpenses(from: from, to: to);
 
           if (_selectedFormat == ExportFormat.pdf) {
             file = await PdfExportService.generateExpenseReport(
@@ -463,9 +497,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
         case ReportType.paymentReport:
           final sPayments =
-              await supplierRepo.getAllPayments(from: _fromDate, to: _toDate);
+              await supplierRepo.getAllPayments(from: from, to: to);
           final cPayments =
-              await customerRepo.getAllPayments(from: _fromDate, to: _toDate);
+              await customerRepo.getAllPayments(from: from, to: to);
           final sPhoneMap = {for (var s in _suppliers) s.id: s.phone};
           final cPhoneMap = {for (var c in _customers) c.id: c.phone};
 
@@ -525,15 +559,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
           break;
 
         case ReportType.monthlyReport:
+          final effectiveFrom = from;
+          final effectiveTo = to;
           final entries = await ledgerRepo.getEntries(
-            from: DateTime.now().subtract(const Duration(days: 30)),
-            to: DateTime.now(),
-            limit: 1000,
+            from: effectiveFrom,
+            to: effectiveTo,
+            limit: 100000,
           );
           final expenseRepo = sl<ExpenseRepository>();
           final monthlyExp = await expenseRepo.getAllExpenses(
-            from: DateTime.now().subtract(const Duration(days: 30)),
-            to: DateTime.now(),
+            from: effectiveFrom,
+            to: effectiveTo,
           );
           final personalCategories = [
             'food',
@@ -586,7 +622,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             file = await PdfExportService.generateLedgerReport(
               entries: entries,
               title: l10n.monthlySummaryReport,
-              subtitle: l10n.last30Days,
+              subtitle: dateSubtitle,
               l10n: l10n,
               openingBalance: openingBalance,
               totalAvailableBalance: totalAvailableBalance,
@@ -616,12 +652,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
         case ReportType.profitLossStatement:
           final purchases =
-              await supplierRepo.getAllPurchases(from: _fromDate, to: _toDate);
-          final sales =
-              await customerRepo.getAllSales(from: _fromDate, to: _toDate);
+              await supplierRepo.getAllPurchases(from: from, to: to);
+          final sales = await customerRepo.getAllSales(from: from, to: to);
           final expenseRepo = sl<ExpenseRepository>();
-          final expenses =
-              await expenseRepo.getAllExpenses(from: _fromDate, to: _toDate);
+          final expenses = await expenseRepo.getAllExpenses(from: from, to: to);
 
           final double totalPurchases =
               purchases.fold(0.0, (sum, p) => sum + p.amount);
@@ -767,7 +801,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     } else if (_toDate != null) {
       return '${context.l10n.toDate}: ${DateFormatter.format(_toDate!)}';
     }
-    return context.l10n.allTypes;
+    return '${context.l10n.dateRange}: ${DateFormatter.format(_effectiveFromDate)} - ${DateFormatter.format(_effectiveToDate)}';
   }
 
   @override
@@ -1081,46 +1115,48 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           .titleSmall
                           ?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            final date = await showDatePicker(
-                              context: context,
-                              initialDate: _fromDate ?? DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime.now(),
-                            );
-                            if (date != null) setState(() => _fromDate = date);
-                          },
-                          icon: const Icon(Icons.calendar_today, size: 16),
-                          label: Text(_fromDate == null
-                              ? context.l10n.fromDate
-                              : DateFormatter.format(_fromDate!)),
-                        ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final results = await showCalendarDatePicker2Dialog(
+                          context: context,
+                          config: CalendarDatePicker2WithActionButtonsConfig(
+                            calendarType: CalendarDatePicker2Type.range,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime.now(),
+                            selectedDayHighlightColor:
+                                Theme.of(context).primaryColor,
+                          ),
+                          dialogSize: const Size(325, 400),
+                          value: [
+                            if (_fromDate != null) _fromDate!,
+                            if (_toDate != null) _toDate!,
+                          ],
+                          borderRadius: BorderRadius.circular(16),
+                        );
+                        if (results != null && results.isNotEmpty) {
+                          final start = results.first;
+                          final end =
+                              results.length > 1 ? results.last : results.first;
+                          if (start != null) {
+                            setState(() {
+                              _fromDate = start;
+                              _toDate = end ?? start;
+                            });
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.calendar_today, size: 16),
+                      label: Text(
+                        (_fromDate != null && _toDate != null)
+                            ? '${DateFormatter.format(_fromDate!)} - ${DateFormatter.format(_toDate!)}'
+                            : context.l10n.dateRange,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            final date = await showDatePicker(
-                              context: context,
-                              initialDate: _toDate ?? DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime.now(),
-                            );
-                            if (date != null) setState(() => _toDate = date);
-                          },
-                          icon: const Icon(Icons.calendar_today, size: 16),
-                          label: Text(_toDate == null
-                              ? context.l10n.toDate
-                              : DateFormatter.format(_toDate!)),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  if (_fromDate != null || _toDate != null)
+                  if (_fromDate != null || _toDate != null) ...[
+                    const SizedBox(height: 6),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -1131,21 +1167,35 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           });
                           _loadMetrics();
                         },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         child: Text(context.l10n.resetDates),
                       ),
                     ),
-                  const SizedBox(height: 16),
+                  ] else ...[
+                    const SizedBox(height: 16),
+                  ],
                 ],
 
                 // Live Summary Cards for Profit Loss, Monthly Summary & Expense Report
-                if (_selectedReportType == ReportType.profitLossStatement)
-                  _buildProfitLossCards(context)
-                else if (_selectedReportType == ReportType.monthlyReport)
-                  _buildMonthlyReportCards(context)
-                else if (_selectedReportType == ReportType.expenseReport)
+                if (_selectedReportType == ReportType.profitLossStatement) ...[
+                  _buildProfitLossCards(context),
+                  const SizedBox(height: 16),
+                ] else if (_selectedReportType == ReportType.monthlyReport) ...[
+                  _buildMonthlyReportCards(context),
+                  const SizedBox(height: 16),
+                ] else if (_selectedReportType == ReportType.expenseReport) ...[
                   _buildExpenseReportCards(context),
+                  const SizedBox(height: 16),
+                ],
 
-                const SizedBox(height: 16),
+                SizedBox(
+                  height: 6,
+                ),
 
                 // Export Buttons
                 ElevatedButton.icon(
@@ -1177,12 +1227,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   bool _requiresDateFilters() {
-    return _selectedReportType == ReportType.ledgerReport ||
-        _selectedReportType == ReportType.purchaseReport ||
-        _selectedReportType == ReportType.salesReport ||
-        _selectedReportType == ReportType.expenseReport ||
-        _selectedReportType == ReportType.paymentReport ||
-        _selectedReportType == ReportType.profitLossStatement;
+    return true;
   }
 
   Widget _buildProfitLossCards(BuildContext context) {

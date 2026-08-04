@@ -447,53 +447,56 @@ class PdfExportService {
             ),
 
             // Detailed Table including Party Name (Customer/Supplier), Mobile Number & Wallet Account
-            pw.TableHelper.fromTextArray(
-              headers: [
-                dateHeader,
-                refHeader,
-                typeHeader,
-                partyHeader,
-                l10n.phone,
-                walletHeader,
-                descHeader,
-                l10n.debit,
-                l10n.credit
-              ],
-              data: entries.map((e) {
-                final party = _getPartyName(e);
-                final phone = _getPartyPhone(e);
-                final wallet = e.walletName ?? '-';
-                return [
-                  DateFormatter.format(e.date),
-                  e.referenceNumber,
-                  e.transactionType.label,
-                  party,
-                  phone,
-                  wallet,
-                  e.description,
-                  e.debit > 0 ? CurrencyFormatter.formatPdf(e.debit) : '-',
-                  e.credit > 0 ? CurrencyFormatter.formatPdf(e.credit) : '-',
-                ];
-              }).toList(),
-              headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5),
-              cellStyle: const pw.TextStyle(fontSize: 7.0),
-              headerDecoration:
-                  const pw.BoxDecoration(color: PdfColors.grey200),
-              cellPadding:
-                  const pw.EdgeInsets.symmetric(horizontal: 3, vertical: 3),
-              cellAlignments: {
-                0: pw.Alignment.centerLeft,
-                1: pw.Alignment.centerLeft,
-                2: pw.Alignment.centerLeft,
-                3: pw.Alignment.centerLeft,
-                4: pw.Alignment.centerLeft,
-                5: pw.Alignment.centerLeft,
-                6: pw.Alignment.centerLeft,
-                7: pw.Alignment.centerRight,
-                8: pw.Alignment.centerRight,
-              },
-            ),
+            if (entries.isNotEmpty)
+              pw.TableHelper.fromTextArray(
+                headers: [
+                  dateHeader,
+                  refHeader,
+                  typeHeader,
+                  partyHeader,
+                  l10n.phone,
+                  walletHeader,
+                  descHeader,
+                  l10n.debit,
+                  l10n.credit
+                ],
+                data: entries.map((e) {
+                  final party = _getPartyName(e);
+                  final phone = _getPartyPhone(e);
+                  final wallet = e.walletName ?? '-';
+                  return [
+                    DateFormatter.format(e.date),
+                    e.referenceNumber,
+                    e.transactionType.label,
+                    party,
+                    phone,
+                    wallet,
+                    e.description,
+                    e.debit > 0 ? CurrencyFormatter.formatPdf(e.debit) : '-',
+                    e.credit > 0 ? CurrencyFormatter.formatPdf(e.credit) : '-',
+                  ];
+                }).toList(),
+                headerStyle:
+                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5),
+                cellStyle: const pw.TextStyle(fontSize: 7.0),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.grey200),
+                cellPadding:
+                    const pw.EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+                cellAlignments: {
+                  0: pw.Alignment.centerLeft,
+                  1: pw.Alignment.centerLeft,
+                  2: pw.Alignment.centerLeft,
+                  3: pw.Alignment.centerLeft,
+                  4: pw.Alignment.centerLeft,
+                  5: pw.Alignment.centerLeft,
+                  6: pw.Alignment.centerLeft,
+                  7: pw.Alignment.centerRight,
+                  8: pw.Alignment.centerRight,
+                },
+              )
+            else
+              pw.SizedBox(),
           ];
         },
       ),
@@ -512,6 +515,7 @@ class PdfExportService {
     required AppLocalizations l10n,
     double? openingBalance,
     double? totalAvailableBalance,
+    String? subtitle,
   }) async {
     final pdf = pw.Document();
     final theme = await _theme();
@@ -530,9 +534,18 @@ class PdfExportService {
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('${l10n.appTitle} ${l10n.outstandingSummary}',
-                      style: pw.TextStyle(
-                          fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('${l10n.appTitle} ${l10n.outstandingSummary}',
+                          style: pw.TextStyle(
+                              fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if (subtitle != null)
+                        pw.Text(subtitle,
+                            style: const pw.TextStyle(
+                                fontSize: 8.5, color: PdfColors.grey700)),
+                    ],
+                  ),
                   pw.Text(DateFormatter.format(DateTime.now()),
                       style: const pw.TextStyle(fontSize: 8.5)),
                 ],
@@ -628,6 +641,7 @@ class PdfExportService {
     required AppLocalizations l10n,
     double? openingBalance,
     double? totalAvailableBalance,
+    String? subtitle,
   }) async {
     final pdf = pw.Document();
     final theme = await _theme();
@@ -651,9 +665,18 @@ class PdfExportService {
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('${l10n.appTitle} ${l10n.walletAccounts}',
-                      style: pw.TextStyle(
-                          fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('${l10n.appTitle} ${l10n.walletAccounts}',
+                          style: pw.TextStyle(
+                              fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if (subtitle != null)
+                        pw.Text(subtitle,
+                            style: const pw.TextStyle(
+                                fontSize: 8.5, color: PdfColors.grey700)),
+                    ],
+                  ),
                   pw.Text(DateFormatter.format(DateTime.now()),
                       style: const pw.TextStyle(fontSize: 8.5)),
                 ],
@@ -665,29 +688,32 @@ class PdfExportService {
               totalAvailableBalance: calcAvailable,
               l10n: l10n,
             ),
-            pw.TableHelper.fromTextArray(
-              headers: [
-                l10n.walletName,
-                l10n.initialBalance,
-                l10n.currentBalance,
-                l10n.enableOverdraft
-              ],
-              data: wallets
-                  .map((w) => [
-                        w.name,
-                        CurrencyFormatter.formatPdf(w.openingBalance),
-                        CurrencyFormatter.formatPdf(w.currentBalance),
-                        w.overdraftEnabled ? l10n.enabled : l10n.disabled,
-                      ])
-                  .toList(),
-              headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.5),
-              cellStyle: const pw.TextStyle(fontSize: 8.0),
-              headerDecoration:
-                  const pw.BoxDecoration(color: PdfColors.grey200),
-              cellPadding:
-                  const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-            ),
+            if (wallets.isNotEmpty)
+              pw.TableHelper.fromTextArray(
+                headers: [
+                  l10n.walletName,
+                  l10n.initialBalance,
+                  l10n.currentBalance,
+                  l10n.enableOverdraft
+                ],
+                data: wallets
+                    .map((w) => [
+                          w.name,
+                          CurrencyFormatter.formatPdf(w.openingBalance),
+                          CurrencyFormatter.formatPdf(w.currentBalance),
+                          w.overdraftEnabled ? l10n.enabled : l10n.disabled,
+                        ])
+                    .toList(),
+                headerStyle:
+                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.5),
+                cellStyle: const pw.TextStyle(fontSize: 8.0),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.grey200),
+                cellPadding:
+                    const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+              )
+            else
+              pw.SizedBox(),
           ];
         },
       ),
@@ -807,7 +833,8 @@ class PdfExportService {
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text('Gross Profit (Sales - Purchases)',
-                      style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700)),
+                      style: const pw.TextStyle(
+                          fontSize: 8.5, color: PdfColors.grey700)),
                   pw.Text(CurrencyFormatter.formatPdf(grossProfit),
                       style: pw.TextStyle(
                           fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
@@ -837,7 +864,8 @@ class PdfExportService {
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text('Net Operating Business Profit',
-                      style: const pw.TextStyle(fontSize: 8.5, color: PdfColors.grey700)),
+                      style: const pw.TextStyle(
+                          fontSize: 8.5, color: PdfColors.grey700)),
                   pw.Text(CurrencyFormatter.formatPdf(netOperatingProfit),
                       style: pw.TextStyle(
                           fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
@@ -901,6 +929,7 @@ class PdfExportService {
     required List<CustomerLedgerEntry> entries,
     required AppLocalizations l10n,
     double? totalAvailableBalance,
+    String? subtitle,
   }) async {
     final pdf = pw.Document();
     final theme = await _theme();
@@ -922,9 +951,18 @@ class PdfExportService {
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('${l10n.customer} ${l10n.ledger}',
-                      style: pw.TextStyle(
-                          fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('${l10n.customer} ${l10n.ledger}',
+                          style: pw.TextStyle(
+                              fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if (subtitle != null)
+                        pw.Text(subtitle,
+                            style: const pw.TextStyle(
+                                fontSize: 8.5, color: PdfColors.grey700)),
+                    ],
+                  ),
                   pw.Text(DateFormatter.format(DateTime.now()),
                       style: const pw.TextStyle(fontSize: 8.5)),
                 ],
@@ -946,50 +984,53 @@ class PdfExportService {
               l10n: l10n,
             ),
 
-            pw.TableHelper.fromTextArray(
-              headers: [
-                l10n.date,
-                l10n.referenceNo,
-                l10n.transactionType,
-                l10n.partyName,
-                l10n.phone,
-                l10n.description,
-                l10n.debit,
-                l10n.credit,
-                l10n.balance
-              ],
-              data: entries.map((e) {
-                return [
-                  DateFormatter.format(e.date),
-                  e.referenceNumber,
-                  e.transactionType,
-                  customer.name,
-                  customer.phone ?? '-',
-                  e.description,
-                  e.debit > 0 ? CurrencyFormatter.formatPdf(e.debit) : '-',
-                  e.credit > 0 ? CurrencyFormatter.formatPdf(e.credit) : '-',
-                  CurrencyFormatter.formatPdf(e.balance),
-                ];
-              }).toList(),
-              headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5),
-              cellStyle: const pw.TextStyle(fontSize: 7.0),
-              headerDecoration:
-                  const pw.BoxDecoration(color: PdfColors.grey200),
-              cellPadding:
-                  const pw.EdgeInsets.symmetric(horizontal: 3, vertical: 3),
-              cellAlignments: {
-                0: pw.Alignment.centerLeft,
-                1: pw.Alignment.centerLeft,
-                2: pw.Alignment.centerLeft,
-                3: pw.Alignment.centerLeft,
-                4: pw.Alignment.centerLeft,
-                5: pw.Alignment.centerLeft,
-                6: pw.Alignment.centerRight,
-                7: pw.Alignment.centerRight,
-                8: pw.Alignment.centerRight,
-              },
-            ),
+            if (entries.isNotEmpty)
+              pw.TableHelper.fromTextArray(
+                headers: [
+                  l10n.date,
+                  l10n.referenceNo,
+                  l10n.transactionType,
+                  l10n.partyName,
+                  l10n.phone,
+                  l10n.description,
+                  l10n.debit,
+                  l10n.credit,
+                  l10n.balance
+                ],
+                data: entries.map((e) {
+                  return [
+                    DateFormatter.format(e.date),
+                    e.referenceNumber,
+                    e.transactionType,
+                    customer.name,
+                    customer.phone ?? '-',
+                    e.description,
+                    e.debit > 0 ? CurrencyFormatter.formatPdf(e.debit) : '-',
+                    e.credit > 0 ? CurrencyFormatter.formatPdf(e.credit) : '-',
+                    CurrencyFormatter.formatPdf(e.balance),
+                  ];
+                }).toList(),
+                headerStyle:
+                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5),
+                cellStyle: const pw.TextStyle(fontSize: 7.0),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.grey200),
+                cellPadding:
+                    const pw.EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+                cellAlignments: {
+                  0: pw.Alignment.centerLeft,
+                  1: pw.Alignment.centerLeft,
+                  2: pw.Alignment.centerLeft,
+                  3: pw.Alignment.centerLeft,
+                  4: pw.Alignment.centerLeft,
+                  5: pw.Alignment.centerLeft,
+                  6: pw.Alignment.centerRight,
+                  7: pw.Alignment.centerRight,
+                  8: pw.Alignment.centerRight,
+                },
+              )
+            else
+              pw.SizedBox(),
           ];
         },
       ),
@@ -1008,6 +1049,7 @@ class PdfExportService {
     required List<SupplierLedgerEntry> entries,
     required AppLocalizations l10n,
     double? totalAvailableBalance,
+    String? subtitle,
   }) async {
     final pdf = pw.Document();
     final theme = await _theme();
@@ -1029,9 +1071,18 @@ class PdfExportService {
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('${l10n.supplier} ${l10n.ledger}',
-                      style: pw.TextStyle(
-                          fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('${l10n.supplier} ${l10n.ledger}',
+                          style: pw.TextStyle(
+                              fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if (subtitle != null)
+                        pw.Text(subtitle,
+                            style: const pw.TextStyle(
+                                fontSize: 8.5, color: PdfColors.grey700)),
+                    ],
+                  ),
                   pw.Text(DateFormatter.format(DateTime.now()),
                       style: const pw.TextStyle(fontSize: 8.5)),
                 ],
@@ -1053,50 +1104,53 @@ class PdfExportService {
               l10n: l10n,
             ),
 
-            pw.TableHelper.fromTextArray(
-              headers: [
-                l10n.date,
-                l10n.referenceNo,
-                l10n.transactionType,
-                l10n.partyName,
-                l10n.phone,
-                l10n.description,
-                l10n.debit,
-                l10n.credit,
-                l10n.balance
-              ],
-              data: entries.map((e) {
-                return [
-                  DateFormatter.format(e.date),
-                  e.referenceNumber,
-                  e.transactionType,
-                  supplier.name,
-                  supplier.phone ?? '-',
-                  e.description,
-                  e.debit > 0 ? CurrencyFormatter.formatPdf(e.debit) : '-',
-                  e.credit > 0 ? CurrencyFormatter.formatPdf(e.credit) : '-',
-                  CurrencyFormatter.formatPdf(e.balance),
-                ];
-              }).toList(),
-              headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5),
-              cellStyle: const pw.TextStyle(fontSize: 7.0),
-              headerDecoration:
-                  const pw.BoxDecoration(color: PdfColors.grey200),
-              cellPadding:
-                  const pw.EdgeInsets.symmetric(horizontal: 3, vertical: 3),
-              cellAlignments: {
-                0: pw.Alignment.centerLeft,
-                1: pw.Alignment.centerLeft,
-                2: pw.Alignment.centerLeft,
-                3: pw.Alignment.centerLeft,
-                4: pw.Alignment.centerLeft,
-                5: pw.Alignment.centerLeft,
-                6: pw.Alignment.centerRight,
-                7: pw.Alignment.centerRight,
-                8: pw.Alignment.centerRight,
-              },
-            ),
+            if (entries.isNotEmpty)
+              pw.TableHelper.fromTextArray(
+                headers: [
+                  l10n.date,
+                  l10n.referenceNo,
+                  l10n.transactionType,
+                  l10n.partyName,
+                  l10n.phone,
+                  l10n.description,
+                  l10n.debit,
+                  l10n.credit,
+                  l10n.balance
+                ],
+                data: entries.map((e) {
+                  return [
+                    DateFormatter.format(e.date),
+                    e.referenceNumber,
+                    e.transactionType,
+                    supplier.name,
+                    supplier.phone ?? '-',
+                    e.description,
+                    e.debit > 0 ? CurrencyFormatter.formatPdf(e.debit) : '-',
+                    e.credit > 0 ? CurrencyFormatter.formatPdf(e.credit) : '-',
+                    CurrencyFormatter.formatPdf(e.balance),
+                  ];
+                }).toList(),
+                headerStyle:
+                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5),
+                cellStyle: const pw.TextStyle(fontSize: 7.0),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.grey200),
+                cellPadding:
+                    const pw.EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+                cellAlignments: {
+                  0: pw.Alignment.centerLeft,
+                  1: pw.Alignment.centerLeft,
+                  2: pw.Alignment.centerLeft,
+                  3: pw.Alignment.centerLeft,
+                  4: pw.Alignment.centerLeft,
+                  5: pw.Alignment.centerLeft,
+                  6: pw.Alignment.centerRight,
+                  7: pw.Alignment.centerRight,
+                  8: pw.Alignment.centerRight,
+                },
+              )
+            else
+              pw.SizedBox(),
           ];
         },
       ),
@@ -1115,6 +1169,7 @@ class PdfExportService {
     required List<WalletTransactionItem> transactions,
     required AppLocalizations l10n,
     double? totalAvailableBalance,
+    String? subtitle,
   }) async {
     final pdf = pw.Document();
     final theme = await _theme();
@@ -1133,9 +1188,18 @@ class PdfExportService {
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('${l10n.walletHistory}: ${wallet.name}',
-                      style: pw.TextStyle(
-                          fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('${l10n.walletHistory}: ${wallet.name}',
+                          style: pw.TextStyle(
+                              fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      if (subtitle != null)
+                        pw.Text(subtitle,
+                            style: const pw.TextStyle(
+                                fontSize: 8.5, color: PdfColors.grey700)),
+                    ],
+                  ),
                   pw.Text(DateFormatter.format(DateTime.now()),
                       style: const pw.TextStyle(fontSize: 8.5)),
                 ],
@@ -1148,52 +1212,55 @@ class PdfExportService {
                   totalAvailableBalance ?? wallet.currentBalance,
               l10n: l10n,
             ),
-            pw.TableHelper.fromTextArray(
-              headers: [
-                l10n.date,
-                l10n.referenceNo,
-                l10n.transactionType,
-                l10n.partyName,
-                l10n.phone,
-                l10n.description,
-                l10n.debit,
-                l10n.credit,
-                l10n.balance
-              ],
-              data: transactions.map((e) {
-                final party = e.partyName ?? '-';
-                final phone = e.partyPhone ?? '-';
-                return [
-                  DateFormatter.format(e.date),
-                  e.referenceNumber,
-                  e.transactionType,
-                  party,
-                  phone,
-                  e.description,
-                  e.debit > 0 ? CurrencyFormatter.formatPdf(e.debit) : '-',
-                  e.credit > 0 ? CurrencyFormatter.formatPdf(e.credit) : '-',
-                  CurrencyFormatter.formatPdf(e.balance),
-                ];
-              }).toList(),
-              headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5),
-              cellStyle: const pw.TextStyle(fontSize: 7.0),
-              headerDecoration:
-                  const pw.BoxDecoration(color: PdfColors.grey200),
-              cellPadding:
-                  const pw.EdgeInsets.symmetric(horizontal: 3, vertical: 3),
-              cellAlignments: {
-                0: pw.Alignment.centerLeft,
-                1: pw.Alignment.centerLeft,
-                2: pw.Alignment.centerLeft,
-                3: pw.Alignment.centerLeft,
-                4: pw.Alignment.centerLeft,
-                5: pw.Alignment.centerLeft,
-                6: pw.Alignment.centerRight,
-                7: pw.Alignment.centerRight,
-                8: pw.Alignment.centerRight,
-              },
-            ),
+            if (transactions.isNotEmpty)
+              pw.TableHelper.fromTextArray(
+                headers: [
+                  l10n.date,
+                  l10n.referenceNo,
+                  l10n.transactionType,
+                  l10n.partyName,
+                  l10n.phone,
+                  l10n.description,
+                  l10n.debit,
+                  l10n.credit,
+                  l10n.balance
+                ],
+                data: transactions.map((e) {
+                  final party = e.partyName ?? '-';
+                  final phone = e.partyPhone ?? '-';
+                  return [
+                    DateFormatter.format(e.date),
+                    e.referenceNumber,
+                    e.transactionType,
+                    party,
+                    phone,
+                    e.description,
+                    e.debit > 0 ? CurrencyFormatter.formatPdf(e.debit) : '-',
+                    e.credit > 0 ? CurrencyFormatter.formatPdf(e.credit) : '-',
+                    CurrencyFormatter.formatPdf(e.balance),
+                  ];
+                }).toList(),
+                headerStyle:
+                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7.5),
+                cellStyle: const pw.TextStyle(fontSize: 7.0),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.grey200),
+                cellPadding:
+                    const pw.EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+                cellAlignments: {
+                  0: pw.Alignment.centerLeft,
+                  1: pw.Alignment.centerLeft,
+                  2: pw.Alignment.centerLeft,
+                  3: pw.Alignment.centerLeft,
+                  4: pw.Alignment.centerLeft,
+                  5: pw.Alignment.centerLeft,
+                  6: pw.Alignment.centerRight,
+                  7: pw.Alignment.centerRight,
+                  8: pw.Alignment.centerRight,
+                },
+              )
+            else
+              pw.SizedBox(),
           ];
         },
       ),
@@ -1259,45 +1326,48 @@ class PdfExportService {
               customerPayouts: customerPayouts,
               l10n: l10n,
             ),
-            pw.TableHelper.fromTextArray(
-              headers: [
-                l10n.date,
-                l10n.referenceNo,
-                l10n.customerName,
-                l10n.phone,
-                l10n.description,
-                l10n.amount
-              ],
-              data: sales.map((s) {
-                final name = s.customerName.trim().isNotEmpty
-                    ? s.customerName
-                    : (customerNames?[s.customerId] ?? '-');
-                final phone = customerPhones[s.customerId] ?? '-';
-                return [
-                  DateFormatter.format(s.date),
-                  s.referenceNumber,
-                  name,
-                  phone,
-                  s.notes ?? '-',
-                  CurrencyFormatter.formatPdf(s.amount),
-                ];
-              }).toList(),
-              headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.0),
-              cellStyle: const pw.TextStyle(fontSize: 7.5),
-              headerDecoration:
-                  const pw.BoxDecoration(color: PdfColors.grey200),
-              cellPadding:
-                  const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-              cellAlignments: {
-                0: pw.Alignment.centerLeft,
-                1: pw.Alignment.centerLeft,
-                2: pw.Alignment.centerLeft,
-                3: pw.Alignment.centerLeft,
-                4: pw.Alignment.centerLeft,
-                5: pw.Alignment.centerRight,
-              },
-            ),
+            if (sales.isNotEmpty)
+              pw.TableHelper.fromTextArray(
+                headers: [
+                  l10n.date,
+                  l10n.referenceNo,
+                  l10n.customerName,
+                  l10n.phone,
+                  l10n.description,
+                  l10n.amount
+                ],
+                data: sales.map((s) {
+                  final name = s.customerName.trim().isNotEmpty
+                      ? s.customerName
+                      : (customerNames?[s.customerId] ?? '-');
+                  final phone = customerPhones[s.customerId] ?? '-';
+                  return [
+                    DateFormatter.format(s.date),
+                    s.referenceNumber,
+                    name,
+                    phone,
+                    s.notes ?? '-',
+                    CurrencyFormatter.formatPdf(s.amount),
+                  ];
+                }).toList(),
+                headerStyle:
+                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.0),
+                cellStyle: const pw.TextStyle(fontSize: 7.5),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.grey200),
+                cellPadding:
+                    const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                cellAlignments: {
+                  0: pw.Alignment.centerLeft,
+                  1: pw.Alignment.centerLeft,
+                  2: pw.Alignment.centerLeft,
+                  3: pw.Alignment.centerLeft,
+                  4: pw.Alignment.centerLeft,
+                  5: pw.Alignment.centerRight,
+                },
+              )
+            else
+              pw.SizedBox(),
           ];
         },
       ),
@@ -1364,48 +1434,51 @@ class PdfExportService {
               supplierPayouts: supplierPayouts,
               l10n: l10n,
             ),
-            pw.TableHelper.fromTextArray(
-              headers: [
-                l10n.date,
-                l10n.referenceNo,
-                l10n.supplierName,
-                l10n.phone,
-                l10n.walletAccount,
-                l10n.description,
-                l10n.amount
-              ],
-              data: purchases.map((p) {
-                final name = p.supplierName.trim().isNotEmpty
-                    ? p.supplierName
-                    : (supplierNames?[p.supplierId] ?? '-');
-                final phone = supplierPhones[p.supplierId] ?? '-';
-                return [
-                  DateFormatter.format(p.date),
-                  p.referenceNumber,
-                  name,
-                  phone,
-                  p.walletName.isNotEmpty ? p.walletName : '-',
-                  p.notes ?? '-',
-                  CurrencyFormatter.formatPdf(p.amount),
-                ];
-              }).toList(),
-              headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.0),
-              cellStyle: const pw.TextStyle(fontSize: 7.5),
-              headerDecoration:
-                  const pw.BoxDecoration(color: PdfColors.grey200),
-              cellPadding:
-                  const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-              cellAlignments: {
-                0: pw.Alignment.centerLeft,
-                1: pw.Alignment.centerLeft,
-                2: pw.Alignment.centerLeft,
-                3: pw.Alignment.centerLeft,
-                4: pw.Alignment.centerLeft,
-                5: pw.Alignment.centerLeft,
-                6: pw.Alignment.centerRight,
-              },
-            ),
+            if (purchases.isNotEmpty)
+              pw.TableHelper.fromTextArray(
+                headers: [
+                  l10n.date,
+                  l10n.referenceNo,
+                  l10n.supplierName,
+                  l10n.phone,
+                  l10n.walletAccount,
+                  l10n.description,
+                  l10n.amount
+                ],
+                data: purchases.map((p) {
+                  final name = p.supplierName.trim().isNotEmpty
+                      ? p.supplierName
+                      : (supplierNames?[p.supplierId] ?? '-');
+                  final phone = supplierPhones[p.supplierId] ?? '-';
+                  return [
+                    DateFormatter.format(p.date),
+                    p.referenceNumber,
+                    name,
+                    phone,
+                    p.walletName.isNotEmpty ? p.walletName : '-',
+                    p.notes ?? '-',
+                    CurrencyFormatter.formatPdf(p.amount),
+                  ];
+                }).toList(),
+                headerStyle:
+                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.0),
+                cellStyle: const pw.TextStyle(fontSize: 7.5),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.grey200),
+                cellPadding:
+                    const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                cellAlignments: {
+                  0: pw.Alignment.centerLeft,
+                  1: pw.Alignment.centerLeft,
+                  2: pw.Alignment.centerLeft,
+                  3: pw.Alignment.centerLeft,
+                  4: pw.Alignment.centerLeft,
+                  5: pw.Alignment.centerLeft,
+                  6: pw.Alignment.centerRight,
+                },
+              )
+            else
+              pw.SizedBox(),
           ];
         },
       ),
@@ -1429,13 +1502,39 @@ class PdfExportService {
     final pdf = pw.Document();
     final theme = await _theme();
     final personalCategories = [
-      'food', 'dining', 'entertainment', 'medical', 'doctor',
-      'hospital', 'medicine', 'education', 'school', 'college',
-      'tuition', 'fee', 'personal', 'family', 'shopping',
-      'clothing', 'grocery', 'groceries', 'home', 'house',
-      'movie', 'gift', 'recharge', 'subscription', 'life',
-      'health', 'self', 'draw', 'drawing', 'household',
-      'charity', 'vacation', 'trip'
+      'food',
+      'dining',
+      'entertainment',
+      'medical',
+      'doctor',
+      'hospital',
+      'medicine',
+      'education',
+      'school',
+      'college',
+      'tuition',
+      'fee',
+      'personal',
+      'family',
+      'shopping',
+      'clothing',
+      'grocery',
+      'groceries',
+      'home',
+      'house',
+      'movie',
+      'gift',
+      'recharge',
+      'subscription',
+      'life',
+      'health',
+      'self',
+      'draw',
+      'drawing',
+      'household',
+      'charity',
+      'vacation',
+      'trip'
     ];
     double personalTotal = 0.0;
     double businessTotal = 0.0;
@@ -1521,47 +1620,50 @@ class PdfExportService {
             ),
             pw.SizedBox(height: 8),
 
-            pw.TableHelper.fromTextArray(
-              headers: [
-                l10n.date,
-                l10n.referenceNo,
-                'Type',
-                l10n.category,
-                l10n.walletAccount,
-                l10n.description,
-                l10n.amount
-              ],
-              data: expenses.map((e) {
-                final isPersonal = personalCategories
-                    .any((p) => e.categoryName.toLowerCase().contains(p));
-                final wallet = e.walletName ?? '-';
-                return [
-                  DateFormatter.format(e.date),
-                  e.referenceNumber,
-                  isPersonal ? 'Personal' : 'Business',
-                  e.categoryName,
-                  wallet,
-                  e.description,
-                  CurrencyFormatter.formatPdf(e.amount),
-                ];
-              }).toList(),
-              headerStyle:
-                  pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.0),
-              cellStyle: const pw.TextStyle(fontSize: 7.5),
-              headerDecoration:
-                  const pw.BoxDecoration(color: PdfColors.grey200),
-              cellPadding:
-                  const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-              cellAlignments: {
-                0: pw.Alignment.centerLeft,
-                1: pw.Alignment.centerLeft,
-                2: pw.Alignment.centerLeft,
-                3: pw.Alignment.centerLeft,
-                4: pw.Alignment.centerLeft,
-                5: pw.Alignment.centerLeft,
-                6: pw.Alignment.centerRight,
-              },
-            ),
+            if (expenses.isNotEmpty)
+              pw.TableHelper.fromTextArray(
+                headers: [
+                  l10n.date,
+                  l10n.referenceNo,
+                  'Type',
+                  l10n.category,
+                  l10n.walletAccount,
+                  l10n.description,
+                  l10n.amount
+                ],
+                data: expenses.map((e) {
+                  final isPersonal = personalCategories
+                      .any((p) => e.categoryName.toLowerCase().contains(p));
+                  final wallet = e.walletName ?? '-';
+                  return [
+                    DateFormatter.format(e.date),
+                    e.referenceNumber,
+                    isPersonal ? 'Personal' : 'Business',
+                    e.categoryName,
+                    wallet,
+                    e.description,
+                    CurrencyFormatter.formatPdf(e.amount),
+                  ];
+                }).toList(),
+                headerStyle:
+                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8.0),
+                cellStyle: const pw.TextStyle(fontSize: 7.5),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.grey200),
+                cellPadding:
+                    const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                cellAlignments: {
+                  0: pw.Alignment.centerLeft,
+                  1: pw.Alignment.centerLeft,
+                  2: pw.Alignment.centerLeft,
+                  3: pw.Alignment.centerLeft,
+                  4: pw.Alignment.centerLeft,
+                  5: pw.Alignment.centerLeft,
+                  6: pw.Alignment.centerRight,
+                },
+              )
+            else
+              pw.SizedBox(),
           ];
         },
       ),

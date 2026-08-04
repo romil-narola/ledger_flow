@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -74,10 +75,15 @@ class _LedgerViewState extends State<_LedgerView> {
       final openingBalance =
           wallets.fold(0.0, (sum, w) => sum + w.openingBalance);
 
+      final dateSubtitle = (_fromDate != null || _toDate != null)
+          ? '${_fromDate != null ? DateFormatter.format(_fromDate!) : ''} - ${_toDate != null ? DateFormatter.format(_toDate!) : ''}'
+          : null;
+
       final file = isPdf
           ? await PdfExportService.generateLedgerReport(
               entries: entries,
               title: l10n.generalLedgerReport,
+              subtitle: dateSubtitle,
               l10n: l10n,
               openingBalance: openingBalance,
               totalAvailableBalance: totalAvailableBalance,
@@ -143,9 +149,13 @@ class _LedgerViewState extends State<_LedgerView> {
   }
 
   void _applyFilters(BuildContext context) {
+    final effectiveTo = _toDate != null
+        ? DateTime(
+            _toDate!.year, _toDate!.month, _toDate!.day, 23, 59, 59, 999)
+        : null;
     context.read<LedgerBloc>().add(LoadLedger(
           from: _fromDate,
-          to: _toDate,
+          to: effectiveTo,
           transactionType: _selectedType?.name,
           walletId: _selectedWallet?.id,
         ));
@@ -513,48 +523,46 @@ class _LedgerViewState extends State<_LedgerView> {
                     Text(stContext.l10n.dateRange,
                         style: Theme.of(stContext).textTheme.titleSmall),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              final date = await showDatePicker(
-                                context: stContext,
-                                initialDate: _fromDate ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime.now(),
-                              );
-                              if (date != null) {
-                                setSheetState(() => _fromDate = date);
-                              }
-                            },
-                            icon: const Icon(Icons.calendar_today, size: 16),
-                            label: Text(_fromDate == null
-                                ? stContext.l10n.fromDate
-                                : DateFormatter.format(_fromDate!)),
-                          ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final results = await showCalendarDatePicker2Dialog(
+                            context: stContext,
+                            config: CalendarDatePicker2WithActionButtonsConfig(
+                              calendarType: CalendarDatePicker2Type.range,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime.now(),
+                              selectedDayHighlightColor:
+                                  Theme.of(stContext).primaryColor,
+                            ),
+                            dialogSize: const Size(325, 400),
+                            value: [
+                              if (_fromDate != null) _fromDate!,
+                              if (_toDate != null) _toDate!,
+                            ],
+                            borderRadius: BorderRadius.circular(16),
+                          );
+                          if (results != null && results.isNotEmpty) {
+                            final start = results.first;
+                            final end = results.length > 1
+                                ? results.last
+                                : results.first;
+                            if (start != null) {
+                              setSheetState(() {
+                                _fromDate = start;
+                                _toDate = end ?? start;
+                              });
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.calendar_today, size: 16),
+                        label: Text(
+                          (_fromDate != null && _toDate != null)
+                              ? '${DateFormatter.format(_fromDate!)} - ${DateFormatter.format(_toDate!)}'
+                              : stContext.l10n.dateRange,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              final date = await showDatePicker(
-                                context: stContext,
-                                initialDate: _toDate ?? DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime.now(),
-                              );
-                              if (date != null) {
-                                setSheetState(() => _toDate = date);
-                              }
-                            },
-                            icon: const Icon(Icons.calendar_today, size: 16),
-                            label: Text(_toDate == null
-                                ? stContext.l10n.toDate
-                                : DateFormatter.format(_toDate!)),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                     const SizedBox(height: 16),
                     // Transaction Type
