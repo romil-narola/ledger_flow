@@ -3,6 +3,7 @@ export 'constants/app_constants.dart';
 export 'di/injection_container.dart';
 export 'theme/app_colors.dart';
 export 'theme/app_theme.dart';
+export 'theme/theme_cubit.dart';
 export 'utils/currency_formatter.dart';
 export 'utils/date_formatter.dart';
 export 'utils/enums.dart';

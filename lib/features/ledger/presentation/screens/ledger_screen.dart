@@ -522,112 +522,154 @@ class _LedgerViewState extends State<_LedgerView> {
                     Text(stContext.l10n.dateRange,
                         style: Theme.of(stContext).textTheme.titleSmall),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final isDark =
-                              Theme.of(stContext).brightness == Brightness.dark;
-                          final primaryColor = Theme.of(stContext).primaryColor;
-                          final results = await showCalendarDatePicker2Dialog(
-                            context: stContext,
-                            config: CalendarDatePicker2WithActionButtonsConfig(
-                              calendarType: CalendarDatePicker2Type.range,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime.now(),
-                              selectedDayHighlightColor: primaryColor,
-                              selectedRangeHighlightColor:
-                                  primaryColor.withValues(alpha: 0.35),
-                              daySplashColor: Colors.transparent,
-                              buttonPadding: const EdgeInsets.all(10),
-                              dayTextStyle: TextStyle(
-                                color: isDark ? Colors.white : Colors.black87,
+                    Builder(
+                      builder: (stContext) {
+                        final isDark =
+                            Theme.of(stContext).brightness == Brightness.dark;
+                        final primaryColor = Theme.of(stContext).primaryColor;
+                        return SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14, horizontal: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              selectedDayTextStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              selectedRangeDayTextStyle: TextStyle(
-                                color: isDark ? Colors.white : Colors.black87,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              weekdayLabelTextStyle: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black54,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              controlsTextStyle: TextStyle(
-                                color: isDark ? Colors.white : Colors.black87,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              disabledDayTextStyle: TextStyle(
-                                color: isDark ? Colors.white38 : Colors.black38,
-                              ),
-                              cancelButtonTextStyle: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black54,
-                              ),
-                              okButton: Container(
-                                margin: const EdgeInsets.only(right: 12),
-                                child: Text(
-                                  'APPLY',
-                                  style: TextStyle(
-                                    color: primaryColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                              foregroundColor:
+                                  isDark ? Colors.white : primaryColor,
+                              side: BorderSide(
+                                color: isDark
+                                    ? Colors.white38
+                                    : primaryColor.withValues(alpha: 0.5),
                               ),
                             ),
-                            dialogSize: const Size(345, 420),
-                            dialogBackgroundColor:
-                                isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                            builder: (context, child) {
-                              return Theme(
-                                data: Theme.of(context).copyWith(
-                                  splashColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  textButtonTheme: TextButtonThemeData(
-                                    style: ButtonStyle(
-                                      overlayColor: WidgetStateProperty.all(
-                                          Colors.transparent),
-                                      shadowColor: WidgetStateProperty.all(
-                                          Colors.transparent),
-                                      elevation: WidgetStateProperty.all(0),
+                            onPressed: () async {
+                              final results =
+                                  await showCalendarDatePicker2Dialog(
+                                context: stContext,
+                                config:
+                                    CalendarDatePicker2WithActionButtonsConfig(
+                                  calendarType: CalendarDatePicker2Type.range,
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime.now(),
+                                  selectedDayHighlightColor:
+                                      isDark ? Colors.white : primaryColor,
+                                  selectedRangeHighlightColor: isDark
+                                      ? Colors.white.withValues(alpha: 0.25)
+                                      : primaryColor.withValues(alpha: 0.25),
+                                  daySplashColor: Colors.transparent,
+                                  buttonPadding: const EdgeInsets.all(10),
+                                  dayTextStyle: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black87,
+                                  ),
+                                  selectedDayTextStyle: TextStyle(
+                                    color: isDark ? Colors.black : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  selectedRangeDayTextStyle: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black87,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  weekdayLabelTextStyle: TextStyle(
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  controlsTextStyle: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black87,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  disabledDayTextStyle: TextStyle(
+                                    color: isDark
+                                        ? Colors.white38
+                                        : Colors.black38,
+                                  ),
+                                  yearTextStyle: TextStyle(
+                                    color:
+                                        isDark ? Colors.white : Colors.black87,
+                                  ),
+                                  selectedYearTextStyle: TextStyle(
+                                    color: isDark ? Colors.black : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  cancelButtonTextStyle: TextStyle(
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                  ),
+                                  okButton: Container(
+                                    margin: const EdgeInsets.only(right: 12),
+                                    child: Text(
+                                      'APPLY',
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.white
+                                            : primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: child,
-                                ),
+                                dialogSize: const Size(345, 420),
+                                dialogBackgroundColor: isDark
+                                    ? const Color(0xFF1E1E1E)
+                                    : Colors.white,
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      splashColor: Colors.transparent,
+                                      highlightColor: Colors.transparent,
+                                      hoverColor: Colors.transparent,
+                                      focusColor: Colors.transparent,
+                                      textButtonTheme: TextButtonThemeData(
+                                        style: ButtonStyle(
+                                          overlayColor: WidgetStateProperty.all(
+                                              Colors.transparent),
+                                          shadowColor: WidgetStateProperty.all(
+                                              Colors.transparent),
+                                          elevation: WidgetStateProperty.all(0),
+                                        ),
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: child!,
+                                    ),
+                                  );
+                                },
+                                value: [
+                                  if (_fromDate != null) _fromDate!,
+                                  if (_toDate != null) _toDate!,
+                                ],
+                                borderRadius: BorderRadius.circular(16),
                               );
+                              if (results != null && results.isNotEmpty) {
+                                final start = results.first;
+                                final end = results.length > 1
+                                    ? results.last
+                                    : results.first;
+                                if (start != null) {
+                                  setSheetState(() {
+                                    _fromDate = start;
+                                    _toDate = end ?? start;
+                                  });
+                                }
+                              }
                             },
-                            value: [
-                              if (_fromDate != null) _fromDate!,
-                              if (_toDate != null) _toDate!,
-                            ],
-                            borderRadius: BorderRadius.circular(16),
-                          );
-                          if (results != null && results.isNotEmpty) {
-                            final start = results.first;
-                            final end = results.length > 1
-                                ? results.last
-                                : results.first;
-                            if (start != null) {
-                              setSheetState(() {
-                                _fromDate = start;
-                                _toDate = end ?? start;
-                              });
-                            }
-                          }
-                        },
-                        icon: const Icon(Icons.calendar_today, size: 16),
-                        label: Text(
-                          (_fromDate != null && _toDate != null)
-                              ? '${DateFormatter.format(_fromDate!)} - ${DateFormatter.format(_toDate!)}'
-                              : stContext.l10n.dateRange,
-                        ),
-                      ),
+                            icon: const Icon(Icons.calendar_today, size: 16),
+                            label: Text(
+                              (_fromDate != null && _toDate != null)
+                                  ? '${DateFormatter.format(_fromDate!)} - ${DateFormatter.format(_toDate!)}'
+                                  : stContext.l10n.dateRange,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     // Transaction Type

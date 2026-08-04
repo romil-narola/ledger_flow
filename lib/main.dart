@@ -23,33 +23,38 @@ class LedgerFlowApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => LocaleCubit()),
+        BlocProvider(create: (_) => ThemeCubit()),
         BlocProvider(create: (_) => sl<BusinessCubit>()),
       ],
-      child: BlocBuilder<LocaleCubit, Locale>(
-        builder: (context, locale) {
-          return MaterialApp.router(
-            title: AppConstants.appName,
-            debugShowCheckedModeBanner: false,
-            locale: locale,
-            supportedLocales: const [
-              Locale('en'),
-              Locale('gu'),
-              Locale('hi'),
-            ],
-            localizationsDelegates: [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return BlocBuilder<LocaleCubit, Locale>(
+            builder: (context, locale) {
+              return MaterialApp.router(
+                title: AppConstants.appName,
+                debugShowCheckedModeBanner: false,
+                locale: locale,
+                supportedLocales: const [
+                  Locale('en'),
+                  Locale('gu'),
+                  Locale('hi'),
+                ],
+                localizationsDelegates: [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
 
-            // Theme settings
-            themeMode: ThemeMode.system, // respect system preference
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
+                // Theme settings
+                themeMode: themeMode,
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
 
-            // GoRouter navigation config
-            routerConfig: appRouter,
+                // GoRouter navigation config
+                routerConfig: appRouter,
+              );
+            },
           );
         },
       ),

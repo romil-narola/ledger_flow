@@ -184,6 +184,19 @@ class _DashboardView extends StatelessWidget {
         context.l10n.appName,
       ),
       actions: [
+        BlocBuilder<ThemeCubit, ThemeMode>(
+          builder: (context, themeMode) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            return IconButton(
+              onPressed: () => context.read<ThemeCubit>().toggleTheme(),
+              icon: Icon(
+                isDark ? Icons.light_mode : Icons.dark_mode_outlined,
+                color: Colors.white,
+              ),
+              tooltip: isDark ? 'Light Mode' : 'Dark Mode',
+            );
+          },
+        ),
         IconButton(
           onPressed: () => context.push('/businesses'),
           icon: const Icon(Icons.business, color: Colors.white),
