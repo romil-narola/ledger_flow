@@ -1127,8 +1127,43 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             lastDate: DateTime.now(),
                             selectedDayHighlightColor:
                                 Theme.of(context).primaryColor,
+                            daySplashColor: Colors.transparent,
+                            buttonPadding: const EdgeInsets.all(10),
+                            okButton: Container(
+                              margin: const EdgeInsets.only(right: 12),
+                              child: Text(
+                                'APPLY',
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
-                          dialogSize: const Size(325, 400),
+                          dialogSize: const Size(345, 420),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                splashColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                textButtonTheme: TextButtonThemeData(
+                                  style: ButtonStyle(
+                                    overlayColor: WidgetStateProperty.all(
+                                        Colors.transparent),
+                                    shadowColor: WidgetStateProperty.all(
+                                        Colors.transparent),
+                                    elevation: WidgetStateProperty.all(0),
+                                  ),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: child,
+                              ),
+                            );
+                          },
                           value: [
                             if (_fromDate != null) _fromDate!,
                             if (_toDate != null) _toDate!,

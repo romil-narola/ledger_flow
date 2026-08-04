@@ -150,8 +150,7 @@ class _LedgerViewState extends State<_LedgerView> {
 
   void _applyFilters(BuildContext context) {
     final effectiveTo = _toDate != null
-        ? DateTime(
-            _toDate!.year, _toDate!.month, _toDate!.day, 23, 59, 59, 999)
+        ? DateTime(_toDate!.year, _toDate!.month, _toDate!.day, 23, 59, 59, 999)
         : null;
     context.read<LedgerBloc>().add(LoadLedger(
           from: _fromDate,
@@ -535,8 +534,43 @@ class _LedgerViewState extends State<_LedgerView> {
                               lastDate: DateTime.now(),
                               selectedDayHighlightColor:
                                   Theme.of(stContext).primaryColor,
+                              daySplashColor: Colors.transparent,
+                              buttonPadding: const EdgeInsets.all(10),
+                              okButton: Container(
+                                margin: const EdgeInsets.only(right: 12),
+                                child: Text(
+                                  'APPLY',
+                                  style: TextStyle(
+                                    color: Theme.of(stContext).primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
-                            dialogSize: const Size(325, 400),
+                            dialogSize: const Size(345, 420),
+                            builder: (context, child) {
+                              return Theme(
+                                data: Theme.of(context).copyWith(
+                                  splashColor: Colors.transparent,
+                                  highlightColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  focusColor: Colors.transparent,
+                                  textButtonTheme: TextButtonThemeData(
+                                    style: ButtonStyle(
+                                      overlayColor: WidgetStateProperty.all(
+                                          Colors.transparent),
+                                      shadowColor: WidgetStateProperty.all(
+                                          Colors.transparent),
+                                      elevation: WidgetStateProperty.all(0),
+                                    ),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: child,
+                                ),
+                              );
+                            },
                             value: [
                               if (_fromDate != null) _fromDate!,
                               if (_toDate != null) _toDate!,
