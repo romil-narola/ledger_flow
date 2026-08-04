@@ -1118,29 +1118,67 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                       onPressed: () async {
+                        final isDark =
+                            Theme.of(context).brightness == Brightness.dark;
+                        final primaryColor = Theme.of(context).primaryColor;
                         final results = await showCalendarDatePicker2Dialog(
                           context: context,
                           config: CalendarDatePicker2WithActionButtonsConfig(
                             calendarType: CalendarDatePicker2Type.range,
                             firstDate: DateTime(2000),
                             lastDate: DateTime.now(),
-                            selectedDayHighlightColor:
-                                Theme.of(context).primaryColor,
+                            selectedDayHighlightColor: primaryColor,
+                            selectedRangeHighlightColor:
+                                primaryColor.withValues(alpha: 0.35),
                             daySplashColor: Colors.transparent,
                             buttonPadding: const EdgeInsets.all(10),
+                            dayTextStyle: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                            selectedDayTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            selectedRangeDayTextStyle: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            weekdayLabelTextStyle: TextStyle(
+                              color: isDark ? Colors.white70 : Colors.black54,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            controlsTextStyle: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            disabledDayTextStyle: TextStyle(
+                              color: isDark ? Colors.white38 : Colors.black38,
+                            ),
+                            cancelButtonTextStyle: TextStyle(
+                              color: isDark ? Colors.white70 : Colors.black54,
+                            ),
                             okButton: Container(
                               margin: const EdgeInsets.only(right: 12),
                               child: Text(
                                 'APPLY',
                                 style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
+                                  color: primaryColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ),
                           dialogSize: const Size(345, 420),
+                          dialogBackgroundColor:
+                              isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           builder: (context, child) {
                             return Theme(
                               data: Theme.of(context).copyWith(

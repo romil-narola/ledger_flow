@@ -526,28 +526,59 @@ class _LedgerViewState extends State<_LedgerView> {
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: () async {
+                          final isDark =
+                              Theme.of(stContext).brightness == Brightness.dark;
+                          final primaryColor = Theme.of(stContext).primaryColor;
                           final results = await showCalendarDatePicker2Dialog(
                             context: stContext,
                             config: CalendarDatePicker2WithActionButtonsConfig(
                               calendarType: CalendarDatePicker2Type.range,
                               firstDate: DateTime(2000),
                               lastDate: DateTime.now(),
-                              selectedDayHighlightColor:
-                                  Theme.of(stContext).primaryColor,
+                              selectedDayHighlightColor: primaryColor,
+                              selectedRangeHighlightColor:
+                                  primaryColor.withValues(alpha: 0.35),
                               daySplashColor: Colors.transparent,
                               buttonPadding: const EdgeInsets.all(10),
+                              dayTextStyle: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                              selectedDayTextStyle: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              selectedRangeDayTextStyle: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              weekdayLabelTextStyle: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.black54,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              controlsTextStyle: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              disabledDayTextStyle: TextStyle(
+                                color: isDark ? Colors.white38 : Colors.black38,
+                              ),
+                              cancelButtonTextStyle: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.black54,
+                              ),
                               okButton: Container(
                                 margin: const EdgeInsets.only(right: 12),
                                 child: Text(
                                   'APPLY',
                                   style: TextStyle(
-                                    color: Theme.of(stContext).primaryColor,
+                                    color: primaryColor,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ),
                             dialogSize: const Size(345, 420),
+                            dialogBackgroundColor:
+                                isDark ? const Color(0xFF1E1E1E) : Colors.white,
                             builder: (context, child) {
                               return Theme(
                                 data: Theme.of(context).copyWith(
