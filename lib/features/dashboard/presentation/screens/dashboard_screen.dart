@@ -188,7 +188,9 @@ class _DashboardView extends StatelessWidget {
           builder: (context, themeMode) {
             final isDark = Theme.of(context).brightness == Brightness.dark;
             return IconButton(
-              onPressed: () => context.read<ThemeCubit>().toggleTheme(),
+              onPressed: () => context
+                  .read<ThemeCubit>()
+                  .toggleTheme(Theme.of(context).brightness),
               icon: Icon(
                 isDark ? Icons.light_mode : Icons.dark_mode_outlined,
                 color: Colors.white,
