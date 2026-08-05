@@ -9,6 +9,8 @@ import '../../../ledger/ledger.dart';
 
 import '../../../business/presentation/bloc/business_cubit.dart';
 import '../../../business/presentation/bloc/business_state.dart';
+import '../../../../core/presentation/widgets/migration_dialog.dart';
+import '../../../../core/database/migration/local_to_firebase_migration_service.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -91,6 +93,9 @@ class _DashboardView extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
+                      // ── Firebase Migration Banner ─────────────
+                      const _MigrationBanner(),
+
                       // ── Summary Cards ────────────────────────
                       _buildSectionTitle(
                           context, context.l10n.financialSummary),
@@ -218,8 +223,106 @@ class _DashboardView extends StatelessWidget {
               color: Colors.white),
           tooltip: context.l10n.walletAccounts,
         ),
+        IconButton(
+          onPressed: () => _showAccountBottomSheet(context),
+          icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
+          tooltip: 'Account Profile',
+        ),
         const SizedBox(width: 4),
       ],
+    );
+  }
+
+  void _showAccountBottomSheet(BuildContext context) {
+    final firebaseService = sl<FirebaseService>();
+    final user = firebaseService.currentUser;
+
+    if (user == null || user.isAnonymous) {
+      context.push('/login');
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: theme.colorScheme.primary,
+                  backgroundImage: user.photoURL != null
+                      ? NetworkImage(user.photoURL!)
+                      : null,
+                  child: user.photoURL == null
+                      ? Text(
+                          (user.displayName ?? 'U')[0].toUpperCase(),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold),
+                        )
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  user.displayName ?? 'Signed In User',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  user.email ?? '',
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      Navigator.of(ctx).pop();
+                      await firebaseService.signOut();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Signed out successfully.')),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.logout_rounded),
+                    label: const Text('Sign Out',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -658,6 +761,111 @@ class _ChartLegend extends StatelessWidget {
         const SizedBox(width: 6),
         Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
+    );
+  }
+}
+
+class _MigrationBanner extends StatefulWidget {
+  const _MigrationBanner();
+
+  @override
+  State<_MigrationBanner> createState() => _MigrationBannerState();
+}
+
+class _MigrationBannerState extends State<_MigrationBanner> {
+  late final LocalToFirebaseMigrationService _migrationService;
+  bool _isCompleted = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _migrationService = sl<LocalToFirebaseMigrationService>();
+    _checkStatus();
+  }
+
+  void _checkStatus() {
+    setState(() {
+      _isCompleted = _migrationService.isMigrationCompleted();
+    });
+  }
+
+  void _openMigrationDialog() {
+    MigrationDialog.showIfNeeded(
+      context,
+      migrationService: _migrationService,
+      onMigrationComplete: () {
+        _checkStatus();
+        if (mounted) {
+          context.read<DashboardBloc>().add(const RefreshDashboard());
+        }
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isCompleted) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Material(
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: _openMigrationDialog,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.cloud_upload_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Cloud Sync Ready',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Tap to safely migrate local database records to Firebase.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _openMigrationDialog,
+                  style: ElevatedButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  child: const Text('Migrate'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

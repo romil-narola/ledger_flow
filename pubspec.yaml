@@ -23,11 +23,17 @@ dependencies:
   bloc: ^8.1.4
   equatable: ^2.0.5
 
-  # Database - Drift SQLite
+  # Database - Drift SQLite & Firebase Cloud Firestore
   drift: ^2.20.3
   sqlite3_flutter_libs: ^0.5.24
   path_provider: ^2.1.4
   path: ^1.9.0
+
+  # Firebase Cloud Backend
+  firebase_core: ^3.4.0
+  cloud_firestore: ^5.3.0
+  firebase_auth: ^5.2.0
+  google_sign_in: ^6.2.1
 
   # Dependency Injection
   get_it: ^8.0.3

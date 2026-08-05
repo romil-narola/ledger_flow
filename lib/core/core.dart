@@ -13,3 +13,4 @@ export 'localization/locale_cubit.dart';
 export 'localization/l10n_extension.dart';
 export 'localization/widgets/language_selector_dialog.dart';
 export 'presentation/widgets/delete_dialog.dart';
+export 'services/firebase_service.dart';

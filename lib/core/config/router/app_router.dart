@@ -23,6 +23,7 @@ import '../../../features/expenses/presentation/screens/expense_summary_screen.d
 import '../../../features/expenses/presentation/screens/expense_category_screen.dart';
 import '../../../features/business/presentation/screens/business_list_screen.dart';
 import '../../../features/business/presentation/screens/business_form_screen.dart';
+import '../../../features/auth/presentation/screens/google_sign_in_screen.dart';
 import '../../presentation/main_shell.dart';
 import '../../database/app_database.dart';
 
@@ -30,6 +31,11 @@ import '../../database/app_database.dart';
 final GoRouter appRouter = GoRouter(
   initialLocation: '/dashboard',
   routes: [
+    GoRoute(
+      path: '/login',
+      name: 'login',
+      builder: (context, state) => const GoogleSignInScreen(),
+    ),
     ShellRoute(
       builder: (context, state, child) => MainShell(child: child),
       routes: [

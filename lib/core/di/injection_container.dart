@@ -9,6 +9,8 @@ import '../database/daos/purchase_dao.dart';
 import '../database/daos/sales_dao.dart';
 import '../database/daos/ledger_dao.dart';
 import '../database/daos/business_dao.dart';
+import '../services/firebase_service.dart';
+import '../database/migration/local_to_firebase_migration_service.dart';
 
 // Services
 import '../../features/business/data/services/current_business_service.dart';
@@ -45,6 +47,8 @@ import '../../features/ledger/presentation/bloc/ledger_bloc.dart';
 import '../../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../features/expenses/presentation/bloc/expense_bloc.dart';
 
+import '../database/migration/firebase_to_local_restore_service.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
@@ -52,9 +56,29 @@ Future<void> initDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerSingleton<SharedPreferences>(sharedPreferences);
 
+  final firebaseService = FirebaseService();
+  await firebaseService.initialize();
+  sl.registerSingleton<FirebaseService>(firebaseService);
+
   // ─── Database ────────────────────────────────────────────────────
   final db = AppDatabase();
   sl.registerSingleton<AppDatabase>(db);
+
+  // ─── Migration & Restore Services ────────────────────────────────
+  sl.registerSingleton<LocalToFirebaseMigrationService>(
+    LocalToFirebaseMigrationService(
+      db: db,
+      firebaseService: firebaseService,
+      prefs: sharedPreferences,
+    ),
+  );
+
+  sl.registerSingleton<FirebaseToLocalRestoreService>(
+    FirebaseToLocalRestoreService(
+      db: db,
+      firebaseService: firebaseService,
+    ),
+  );
 
   // ─── Services ────────────────────────────────────────────────────
   sl.registerSingleton<CurrentBusinessService>(
